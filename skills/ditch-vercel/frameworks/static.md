@@ -153,16 +153,16 @@ Remove `vercel.json` from the project root.
 
 ### Supported
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Static HTML/CSS/JS | Supported | Cloudflare Pages serves static assets with zero issues. Global CDN, automatic compression, HTTP/2. |
-| Custom domains | Supported | Configure in Cloudflare dashboard. Free SSL included. |
-| SPA routing (client-side) | Supported | Use `/* /index.html 200` in `_redirects` for SPA fallback. |
-| Custom headers | Supported | Use `_headers` file in the output directory. |
-| Redirects | Supported | Use `_redirects` file in the output directory. |
-| Trailing slash handling | Supported | Cloudflare Pages strips trailing slashes by default. |
-| 404 pages | Supported | Place a `404.html` in the output directory root. Cloudflare Pages serves it automatically for missing routes. |
-| Clean URLs | Supported | `/about.html` is served at `/about` automatically. |
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| Static HTML/CSS/JS | 0 | Automated | Supported | Cloudflare Pages serves static assets with zero issues. Global CDN, automatic compression, HTTP/2. |
+| Custom domains | 0 | Automated | Supported | Configure in Cloudflare dashboard. Free SSL included. |
+| SPA routing (client-side) | 0 | Automated | Supported | Use `/* /index.html 200` in `_redirects` for SPA fallback. |
+| Custom headers | 0 | Automated | Supported | Use `_headers` file in the output directory. |
+| Redirects | 0 | Automated | Supported | Use `_redirects` file in the output directory. |
+| Trailing slash handling | 0 | Automated | Supported | Cloudflare Pages strips trailing slashes by default. |
+| 404 pages | 0 | Automated | Supported | Place a `404.html` in the output directory root. Cloudflare Pages serves it automatically for missing routes. |
+| Clean URLs | 0 | Automated | Supported | `/about.html` is served at `/about` automatically. |
 
 ### Limits
 

@@ -96,28 +96,28 @@ Remove `vercel.json` from the project root.
 
 ### Supported
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| SSR (server output) | Supported | First-class support. Cloudflare acquired the Astro team; Cloudflare is a primary deployment target. |
-| Hybrid rendering | Supported | Use `output: 'hybrid'` with `export const prerender = true/false` per page. |
-| Static output | Supported | Deploy `dist/` to Cloudflare Pages as static assets. |
-| API endpoints | Supported | Run as Cloudflare Workers. |
-| Astro 6+ Workers bindings | Supported | Native access to KV, R2, D1, etc. via `Astro.locals.runtime.env`. |
-| Content Collections | Supported | Works unchanged. |
-| View Transitions | Supported | Client-side feature, works unchanged. |
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| SSR (server output) | 0 | Automated | Supported | First-class support. Cloudflare acquired the Astro team; Cloudflare is a primary deployment target. |
+| Hybrid rendering | 0 | Automated | Supported | Use `output: 'hybrid'` with `export const prerender = true/false` per page. |
+| Static output | 0 | Automated | Supported | Deploy `dist/` to Cloudflare Pages as static assets. |
+| API endpoints | 0 | Automated | Supported | Run as Cloudflare Workers. |
+| Astro 6+ Workers bindings | 0 | Automated | Supported | Native access to KV, R2, D1, etc. via `Astro.locals.runtime.env`. |
+| Content Collections | 0 | Automated | Supported | Works unchanged. |
+| View Transitions | 0 | Automated | Supported | Client-side feature, works unchanged. |
 
 ### Partial
 
-| Feature | Status | Action |
-|---------|--------|--------|
-| Image optimization (`astro:assets`) | Partial | Use Cloudflare Image Transforms (requires a plan that supports it) or configure a custom image service in `astro.config.mjs`. The `sharp` library is NOT available in Workers — use `@astrojs/cloudflare`'s built-in image service or an external service. |
-| Node.js APIs in SSR | Partial | Workers runtime supports a subset of Node.js APIs. Use `nodejs_compat` compatibility flag. Some Node.js built-ins may not be available. |
+| Feature | Weight | Category | Status | Action |
+|---------|--------|----------|--------|--------|
+| Image optimization (`astro:assets`) | 1 | Attention | Partial | Use Cloudflare Image Transforms (requires a plan that supports it) or configure a custom image service in `astro.config.mjs`. The `sharp` library is NOT available in Workers — use `@astrojs/cloudflare`'s built-in image service or an external service. |
+| Node.js APIs in SSR | 1 | Attention | Partial | Workers runtime supports a subset of Node.js APIs. Use `nodejs_compat` compatibility flag. Some Node.js built-ins may not be available. |
 
 ### Manual
 
-| Feature | Replacement | Action |
-|---------|-------------|--------|
-| `@vercel/analytics` | Cloudflare Web Analytics | Remove the package. Add the Cloudflare Web Analytics JS snippet to the `<head>` of the base layout. |
-| `@vercel/speed-insights` | None (remove) | No direct equivalent. Remove the package and component. |
-| `@vercel/blob` | Cloudflare R2 | Different API. Access R2 via `Astro.locals.runtime.env.BUCKET_NAME`. |
-| `@vercel/kv` | Cloudflare KV | Different API. Access KV via `Astro.locals.runtime.env.KV_NAMESPACE`. Add binding to `wrangler.toml`. |
+| Feature | Weight | Category | Replacement | Action |
+|---------|--------|----------|-------------|--------|
+| `@vercel/analytics` | 1 | Attention | Cloudflare Web Analytics | Remove the package. Add the Cloudflare Web Analytics JS snippet to the `<head>` of the base layout. |
+| `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package and component. |
+| `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Access R2 via `Astro.locals.runtime.env.BUCKET_NAME`. |
+| `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `Astro.locals.runtime.env.KV_NAMESPACE`. Add binding to `wrangler.toml`. |

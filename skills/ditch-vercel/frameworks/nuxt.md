@@ -96,31 +96,31 @@ Remove `vercel.json` from the project root.
 
 ### Supported
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| SSR | Supported | Nitro has native Cloudflare Pages preset. First-class support. |
-| Static generation (`nuxt generate`) | Supported | Pre-rendered pages deploy as static assets on Cloudflare Pages. |
-| Hybrid rendering (`routeRules`) | Supported | Per-route rendering rules work with the Cloudflare preset. |
-| API routes (`server/api/`) | Supported | Run as Cloudflare Workers via Nitro. |
-| Server middleware | Supported | Runs in the Worker. |
-| Nitro route rules | Supported | `routeRules` for caching, redirects, prerendering work on Cloudflare. |
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| SSR | 0 | Automated | Supported | Nitro has native Cloudflare Pages preset. First-class support. |
+| Static generation (`nuxt generate`) | 0 | Automated | Supported | Pre-rendered pages deploy as static assets on Cloudflare Pages. |
+| Hybrid rendering (`routeRules`) | 0 | Automated | Supported | Per-route rendering rules work with the Cloudflare preset. |
+| API routes (`server/api/`) | 0 | Automated | Supported | Run as Cloudflare Workers via Nitro. |
+| Server middleware | 0 | Automated | Supported | Runs in the Worker. |
+| Nitro route rules | 0 | Automated | Supported | `routeRules` for caching, redirects, prerendering work on Cloudflare. |
 
 ### Partial
 
-| Feature | Status | Action |
-|---------|--------|--------|
-| `nuxt/image` (`@nuxt/image`) | Partial | The Vercel provider (`provider: 'vercel'`) must be replaced. Use `provider: 'cloudflare'` for Cloudflare Image Resizing (requires compatible plan), or `provider: 'ipx'` for self-hosted optimization, or an external provider. |
-| Node.js APIs | Partial | Workers runtime has limited Node.js compat. Use `nodejs_compat` flag. File system APIs are NOT available at runtime. |
-| ISR | Partial | Nitro supports `routeRules` with `swr` (stale-while-revalidate) on Cloudflare. Configure cache duration per route. |
-| NuxtHub | Supported | If using NuxtHub, it provides native Cloudflare KV, D1, and R2 bindings with zero config. Consider adopting NuxtHub for the easiest Cloudflare integration. |
+| Feature | Weight | Category | Status | Action |
+|---------|--------|----------|--------|--------|
+| `nuxt/image` (`@nuxt/image`) | 1 | Attention | Partial | The Vercel provider (`provider: 'vercel'`) must be replaced. Use `provider: 'cloudflare'` for Cloudflare Image Resizing (requires compatible plan), or `provider: 'ipx'` for self-hosted optimization, or an external provider. |
+| Node.js APIs | 1 | Attention | Partial | Workers runtime has limited Node.js compat. Use `nodejs_compat` flag. File system APIs are NOT available at runtime. |
+| ISR | 1 | Attention | Partial | Nitro supports `routeRules` with `swr` (stale-while-revalidate) on Cloudflare. Configure cache duration per route. |
+| NuxtHub | 0 | Automated | Supported | If using NuxtHub, it provides native Cloudflare KV, D1, and R2 bindings with zero config. Consider adopting NuxtHub for the easiest Cloudflare integration. |
 
 ### Manual
 
-| Feature | Replacement | Action |
-|---------|-------------|--------|
-| `@nuxtjs/vercel-analytics` | Cloudflare Web Analytics | Remove the module from `nuxt.config.ts` `modules` array. Uninstall the package. Add Cloudflare Web Analytics JS snippet to `app.vue` or a Nuxt plugin. |
-| `@vercel/analytics` | Cloudflare Web Analytics | Remove the package. Add Cloudflare Web Analytics snippet. |
-| `@vercel/speed-insights` | None (remove) | No direct equivalent. Remove the package. |
-| `@vercel/blob` | Cloudflare R2 | Different API. Access R2 via `hubBlob()` (NuxtHub) or Nitro's `useStorage()` with Cloudflare driver. |
-| `@vercel/kv` | Cloudflare KV | Different API. Access KV via `hubKV()` (NuxtHub) or Nitro's `useStorage()` with Cloudflare KV driver. |
-| `@vercel/postgres` | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Access via `hubDatabase()` (NuxtHub) or Nitro's `useDatabase()`. Hyperdrive can proxy existing Postgres. |
+| Feature | Weight | Category | Replacement | Action |
+|---------|--------|----------|-------------|--------|
+| `@nuxtjs/vercel-analytics` | 1 | Attention | Cloudflare Web Analytics | Remove the module from `nuxt.config.ts` `modules` array. Uninstall the package. Add Cloudflare Web Analytics JS snippet to `app.vue` or a Nuxt plugin. |
+| `@vercel/analytics` | 1 | Attention | Cloudflare Web Analytics | Remove the package. Add Cloudflare Web Analytics snippet. |
+| `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package. |
+| `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Access R2 via `hubBlob()` (NuxtHub) or Nitro's `useStorage()` with Cloudflare driver. |
+| `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `hubKV()` (NuxtHub) or Nitro's `useStorage()` with Cloudflare KV driver. |
+| `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Access via `hubDatabase()` (NuxtHub) or Nitro's `useDatabase()`. Hyperdrive can proxy existing Postgres. |

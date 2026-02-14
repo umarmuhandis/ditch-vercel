@@ -158,29 +158,29 @@ Remove `vercel.json` from the project root.
 
 ### Supported
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Loaders / Actions | Supported | Run as Cloudflare Workers. Access Cloudflare bindings via `context.cloudflare.env`. |
-| Route modules | Supported | File-based routing works identically. |
-| Nested routes | Supported | Works unchanged. |
-| Error boundaries | Supported | Works unchanged. |
-| Streaming | Supported | `renderToReadableStream` is native to Workers. |
-| `fetch` API | Supported | Native in Workers runtime. |
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| Loaders / Actions | 0 | Automated | Supported | Run as Cloudflare Workers. Access Cloudflare bindings via `context.cloudflare.env`. |
+| Route modules | 0 | Automated | Supported | File-based routing works identically. |
+| Nested routes | 0 | Automated | Supported | Works unchanged. |
+| Error boundaries | 0 | Automated | Supported | Works unchanged. |
+| Streaming | 0 | Automated | Supported | `renderToReadableStream` is native to Workers. |
+| `fetch` API | 0 | Automated | Supported | Native in Workers runtime. |
 
 ### Partial
 
-| Feature | Status | Action |
-|---------|--------|--------|
-| Session storage | Partial | Replace `createCookieSessionStorage` from `@remix-run/node` with the one from `@remix-run/cloudflare`. For non-cookie storage, use Cloudflare KV or D1 as the backing store. |
-| Node.js APIs | Partial | Workers runtime has limited Node.js compat. Use `nodejs_compat` flag. File system APIs (`fs`) are NOT available. |
-| `crypto` / `node:crypto` | Partial | Workers has Web Crypto API natively. Some `node:crypto` functions work with `nodejs_compat`. |
+| Feature | Weight | Category | Status | Action |
+|---------|--------|----------|--------|--------|
+| Session storage | 1 | Attention | Partial | Replace `createCookieSessionStorage` from `@remix-run/node` with the one from `@remix-run/cloudflare`. For non-cookie storage, use Cloudflare KV or D1 as the backing store. |
+| Node.js APIs | 1 | Attention | Partial | Workers runtime has limited Node.js compat. Use `nodejs_compat` flag. File system APIs (`fs`) are NOT available. |
+| `crypto` / `node:crypto` | 1 | Attention | Partial | Workers has Web Crypto API natively. Some `node:crypto` functions work with `nodejs_compat`. |
 
 ### Manual
 
-| Feature | Replacement | Action |
-|---------|-------------|--------|
-| `@vercel/analytics` | Cloudflare Web Analytics | Remove the package. Add Cloudflare Web Analytics snippet to root template. |
-| `@vercel/speed-insights` | None (remove) | No direct equivalent. Remove the package and component. |
-| `@vercel/blob` | Cloudflare R2 | Different API. Access R2 via `context.cloudflare.env.BUCKET_NAME` in loaders/actions. |
-| `@vercel/kv` | Cloudflare KV | Different API. Access KV via `context.cloudflare.env.KV_NAMESPACE` in loaders/actions. |
-| `@vercel/postgres` | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Hyperdrive proxies existing Postgres. Access via `context.cloudflare.env`. |
+| Feature | Weight | Category | Replacement | Action |
+|---------|--------|----------|-------------|--------|
+| `@vercel/analytics` | 1 | Attention | Cloudflare Web Analytics | Remove the package. Add Cloudflare Web Analytics snippet to root template. |
+| `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package and component. |
+| `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Access R2 via `context.cloudflare.env.BUCKET_NAME` in loaders/actions. |
+| `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `context.cloudflare.env.KV_NAMESPACE` in loaders/actions. |
+| `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Hyperdrive proxies existing Postgres. Access via `context.cloudflare.env`. |

@@ -104,30 +104,30 @@ Remove `vercel.json` from the project root after migrating its contents.
 
 ### Supported (works with OpenNext on Cloudflare)
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| App Router | Supported | Fully supported via OpenNext |
-| Pages Router | Supported | Fully supported via OpenNext |
-| API Routes | Supported | Run as Cloudflare Workers |
-| Edge Middleware | Supported | Runs on Cloudflare edge via OpenNext |
-| Edge Runtime routes | Supported | Native on Cloudflare Workers |
-| Server Actions | Supported | Handled by OpenNext worker |
-| ISR | Supported | Via OpenNext's cache handler with Cloudflare KV |
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| App Router | 0 | Automated | Supported | Fully supported via OpenNext |
+| Pages Router | 0 | Automated | Supported | Fully supported via OpenNext |
+| API Routes | 0 | Automated | Supported | Run as Cloudflare Workers |
+| Edge Middleware | 0 | Automated | Supported | Runs on Cloudflare edge via OpenNext |
+| Edge Runtime routes | 0 | Automated | Supported | Native on Cloudflare Workers |
+| Server Actions | 0 | Automated | Supported | Handled by OpenNext worker |
+| ISR | 0 | Automated | Supported | Via OpenNext's cache handler with Cloudflare KV |
 
 ### Partial (works with caveats)
 
-| Feature | Status | Action |
-|---------|--------|--------|
-| `next/image` | Partial | Works with OpenNext. Uses Cloudflare Image Resizing (requires a plan that supports it). Alternative: use a custom image loader (e.g., `unpic`, `cloudinary`, or `imgix`). |
-| Bundle size > 25MB | Partial | Cloudflare Workers have a 25MB compressed size limit for the worker script. If the bundle exceeds this, it is a **potential blocker**. Mitigation: code-split aggressively, move large deps to client-side, use dynamic imports. |
+| Feature | Weight | Category | Status | Action |
+|---------|--------|----------|--------|--------|
+| `next/image` | 1 | Attention | Partial | Works with OpenNext. Uses Cloudflare Image Resizing (requires a plan that supports it). Alternative: use a custom image loader (e.g., `unpic`, `cloudinary`, or `imgix`). |
+| Bundle size > 25MB | 3 | Blocker | Partial | Cloudflare Workers have a 25MB compressed size limit for the worker script. If the bundle exceeds this, it is a **potential blocker**. Mitigation: code-split aggressively, move large deps to client-side, use dynamic imports. |
 
 ### Manual (requires code changes)
 
-| Feature | Replacement | Action |
-|---------|-------------|--------|
-| `@vercel/og` | `satori` + Workers or `@cloudflare/pages-plugin-vercel-og` | Replace OG image generation. `@cloudflare/pages-plugin-vercel-og` is a near drop-in replacement. |
-| `@vercel/analytics` | Cloudflare Web Analytics | Remove the package and its `<Analytics />` component. Add the Cloudflare Web Analytics JS snippet to `<head>` in the root layout. Get the snippet from the Cloudflare dashboard. |
-| `@vercel/speed-insights` | None (remove) | No direct Cloudflare equivalent. Remove the package and its `<SpeedInsights />` component. Consider Cloudflare Observatory for performance monitoring. |
-| `@vercel/blob` | Cloudflare R2 | Different API. Replace `put()`, `del()`, `list()`, `head()` calls with R2 binding methods (`put()`, `delete()`, `list()`, `head()`). R2 bindings are accessed via `process.env` or platform context. |
-| `@vercel/kv` | Cloudflare KV | Different API. Replace `kv.get()`, `kv.set()` with KV namespace binding methods. Add KV namespace to `wrangler.toml`. |
-| `@vercel/postgres` | Cloudflare D1 or Hyperdrive | Different API entirely. D1 uses SQLite syntax. Hyperdrive can proxy to existing Postgres. If the project uses Prisma or Drizzle, update the adapter config. |
+| Feature | Weight | Category | Replacement | Action |
+|---------|--------|----------|-------------|--------|
+| `@vercel/og` | 1 | Attention | `satori` + Workers or `@cloudflare/pages-plugin-vercel-og` | Replace OG image generation. `@cloudflare/pages-plugin-vercel-og` is a near drop-in replacement. |
+| `@vercel/analytics` | 1 | Attention | Cloudflare Web Analytics | Remove the package and its `<Analytics />` component. Add the Cloudflare Web Analytics JS snippet to `<head>` in the root layout. Get the snippet from the Cloudflare dashboard. |
+| `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct Cloudflare equivalent. Remove the package and its `<SpeedInsights />` component. Consider Cloudflare Observatory for performance monitoring. |
+| `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Replace `put()`, `del()`, `list()`, `head()` calls with R2 binding methods (`put()`, `delete()`, `list()`, `head()`). R2 bindings are accessed via `process.env` or platform context. |
+| `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Replace `kv.get()`, `kv.set()` with KV namespace binding methods. Add KV namespace to `wrangler.toml`. |
+| `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | Different API entirely. D1 uses SQLite syntax. Hyperdrive can proxy to existing Postgres. If the project uses Prisma or Drizzle, update the adapter config. |

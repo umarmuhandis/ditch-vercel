@@ -123,31 +123,31 @@ Remove `vercel.json` from the project root.
 
 ### Supported
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| SSR | Supported | Official `@sveltejs/adapter-cloudflare` is well-maintained by the SvelteKit team. |
-| Prerendering | Supported | Static pages are generated at build time. Works unchanged. |
-| API routes (`+server.ts`) | Supported | Run as Cloudflare Workers. |
-| Form actions | Supported | Work unchanged in Workers runtime. |
-| Hooks (`hooks.server.ts`) | Supported | Run in the Worker. Access `event.platform.env` for bindings. |
-| Load functions | Supported | Both universal and server load functions work. |
-| Streaming | Supported | Works natively in Workers. |
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| SSR | 0 | Automated | Supported | Official `@sveltejs/adapter-cloudflare` is well-maintained by the SvelteKit team. |
+| Prerendering | 0 | Automated | Supported | Static pages are generated at build time. Works unchanged. |
+| API routes (`+server.ts`) | 0 | Automated | Supported | Run as Cloudflare Workers. |
+| Form actions | 0 | Automated | Supported | Work unchanged in Workers runtime. |
+| Hooks (`hooks.server.ts`) | 0 | Automated | Supported | Run in the Worker. Access `event.platform.env` for bindings. |
+| Load functions | 0 | Automated | Supported | Both universal and server load functions work. |
+| Streaming | 0 | Automated | Supported | Works natively in Workers. |
 
 ### Partial
 
-| Feature | Status | Action |
-|---------|--------|--------|
-| Node.js APIs | Partial | Workers runtime has limited Node.js compat. Use `nodejs_compat` flag in `wrangler.toml`. File system APIs (`fs`) are NOT available. |
-| `$env/static/private` | Partial | Works, but environment variables must be set in the Cloudflare dashboard or `wrangler.toml` `[vars]` section. `.env` files work only in local dev via `wrangler dev`. |
-| Image optimization | Partial | No built-in equivalent to Vercel's image optimization. Use Cloudflare Image Transforms (requires compatible plan) or an external image service. |
+| Feature | Weight | Category | Status | Action |
+|---------|--------|----------|--------|--------|
+| Node.js APIs | 1 | Attention | Partial | Workers runtime has limited Node.js compat. Use `nodejs_compat` flag in `wrangler.toml`. File system APIs (`fs`) are NOT available. |
+| `$env/static/private` | 1 | Attention | Partial | Works, but environment variables must be set in the Cloudflare dashboard or `wrangler.toml` `[vars]` section. `.env` files work only in local dev via `wrangler dev`. |
+| Image optimization | 1 | Attention | Partial | No built-in equivalent to Vercel's image optimization. Use Cloudflare Image Transforms (requires compatible plan) or an external image service. |
 
 ### Manual
 
-| Feature | Replacement | Action |
-|---------|-------------|--------|
-| `@vercel/analytics` | Cloudflare Web Analytics | Remove the package. Add Cloudflare Web Analytics JS snippet to `src/app.html` `<head>`. |
-| `@vercel/speed-insights` | None (remove) | No direct equivalent. Remove the package and component. |
-| `@vercel/blob` | Cloudflare R2 | Different API. Access R2 via `platform.env.BUCKET_NAME` in server load functions and API routes. |
-| `@vercel/kv` | Cloudflare KV | Different API. Access KV via `platform.env.KV_NAMESPACE`. Add KV binding to `wrangler.toml`. |
-| `@vercel/postgres` | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Hyperdrive proxies existing Postgres. Access via `platform.env`. |
-| Edge config (`@vercel/edge-config`) | Cloudflare KV | Replace with KV namespace for key-value configuration data. |
+| Feature | Weight | Category | Replacement | Action |
+|---------|--------|----------|-------------|--------|
+| `@vercel/analytics` | 1 | Attention | Cloudflare Web Analytics | Remove the package. Add Cloudflare Web Analytics JS snippet to `src/app.html` `<head>`. |
+| `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package and component. |
+| `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Access R2 via `platform.env.BUCKET_NAME` in server load functions and API routes. |
+| `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `platform.env.KV_NAMESPACE`. Add KV binding to `wrangler.toml`. |
+| `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Hyperdrive proxies existing Postgres. Access via `platform.env`. |
+| Edge config (`@vercel/edge-config`) | 1 | Attention | Cloudflare KV | Replace with KV namespace for key-value configuration data. |
