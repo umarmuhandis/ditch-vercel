@@ -8,29 +8,46 @@
 
 ---
 
+## Scoring
+
+Each feature has a weight used to calculate migration complexity:
+
+| Weight | Category | Meaning |
+|--------|----------|---------|
+| 0 | Automated | ditch-vercel handles this entirely |
+| 1 | Attention | Works but needs minor manual adjustment |
+| 3 | Blocker | Significant effort, may prevent migration |
+
+**Traffic light score** (sum of weights for detected features):
+- 🟢 GREEN (0-2): ~1-2 hours — mostly automated
+- 🟡 YELLOW (3-6): ~3-5 hours — several manual steps
+- 🔴 RED (7+): ~1-2 days — significant refactoring or blockers
+
+---
+
 ## Compatibility Matrix
 
-Mapping of Vercel features to Cloudflare equivalents. Use this to generate the compatibility report in Step 4.
+Mapping of Vercel features to Cloudflare equivalents. Use this to generate the compatibility report in Phase 2.
 
-| Vercel Feature | Cloudflare Equivalent | Status | Notes |
-|---|---|---|---|
-| Serverless Functions | Workers | Supported | Via OpenNext or framework adapter |
-| Edge Middleware | Workers | Supported | Native edge compute |
-| Image Optimization | Image Resizing / Cloudflare Images | Partial | Requires Business+ plan for Image Resizing, or use custom loader (unpic, cloudinary, imgix) |
-| ISR | KV + Cache API | Partial | Via OpenNext cache handler or framework-specific caching |
-| Cron Jobs | Cron Triggers | Partial | Define in `wrangler.toml`, different syntax from `vercel.json` crons |
-| Environment Variables | wrangler.toml `[vars]` or dashboard | Supported | Use `wrangler secret put` for secrets (encrypted, not in toml) |
-| Preview Deployments | `wrangler dev` / branch deploys | Supported | Git-integrated branch deploys available via Pages |
-| Vercel Analytics | Cloudflare Web Analytics | Partial | Different SDK. Remove `@vercel/analytics`, add Cloudflare JS snippet from dashboard |
-| Vercel Speed Insights | — | Manual | No direct equivalent. Remove `@vercel/speed-insights`. Use Cloudflare Observatory or Browser Insights for RUM |
-| `@vercel/og` | `satori` + Workers | Partial | Manual setup needed. Alternative: `@cloudflare/pages-plugin-vercel-og` as near drop-in |
-| Vercel Blob | R2 | Partial | Different API. Use S3-compatible client or R2 bindings. Add `[[r2_buckets]]` to `wrangler.toml` |
-| Vercel KV | Cloudflare KV | Partial | Different API, simpler. Add `[[kv_namespaces]]` to `wrangler.toml` |
-| Vercel Postgres | D1 or Hyperdrive | Partial | D1 = SQLite-compatible serverless DB. Hyperdrive = connection pool proxy to existing Postgres |
-| Monorepo | Workers + Pages | Supported | Configure build output path per app |
-| Rewrites | `_redirects` file (status 200) or next.config rewrites | Supported | Move from `vercel.json` to framework-native or `_redirects` |
-| Redirects | `_redirects` file or next.config redirects | Supported | Move from `vercel.json` to framework-native or `_redirects` |
-| Headers | `_headers` file or next.config headers | Supported | Move from `vercel.json` to framework-native or `_headers` |
+| Vercel Feature | Cloudflare Equivalent | Weight | Category | Status | Notes |
+|---|---|---|---|---|---|
+| Serverless Functions | Workers | 0 | Automated | Supported | Via OpenNext or framework adapter |
+| Edge Middleware | Workers | 0 | Automated | Supported | Native edge compute |
+| Image Optimization | Image Resizing / Cloudflare Images | 1 | Attention | Partial | Requires Business+ plan for Image Resizing, or use custom loader (unpic, cloudinary, imgix) |
+| ISR | KV + Cache API | 1 | Attention | Partial | Via OpenNext cache handler or framework-specific caching |
+| Cron Jobs | Cron Triggers | 1 | Attention | Partial | Define in `wrangler.toml`, different syntax from `vercel.json` crons |
+| Environment Variables | wrangler.toml `[vars]` or dashboard | 0 | Automated | Supported | Use `wrangler secret put` for secrets (encrypted, not in toml) |
+| Preview Deployments | `wrangler dev` / branch deploys | 0 | Automated | Supported | Git-integrated branch deploys available via Pages |
+| Vercel Analytics | Cloudflare Web Analytics | 1 | Attention | Partial | Different SDK. Remove `@vercel/analytics`, add Cloudflare JS snippet from dashboard |
+| Vercel Speed Insights | — | 1 | Attention | Manual | No direct equivalent. Remove `@vercel/speed-insights`. Use Cloudflare Observatory or Browser Insights for RUM |
+| `@vercel/og` | `satori` + Workers | 1 | Attention | Partial | Manual setup needed. Alternative: `@cloudflare/pages-plugin-vercel-og` as near drop-in |
+| Vercel Blob | R2 | 3 | Blocker | Partial | Different API. Use S3-compatible client or R2 bindings. Add `[[r2_buckets]]` to `wrangler.toml` |
+| Vercel KV | Cloudflare KV | 1 | Attention | Partial | Different API, simpler. Add `[[kv_namespaces]]` to `wrangler.toml` |
+| Vercel Postgres | D1 or Hyperdrive | 3 | Blocker | Partial | D1 = SQLite-compatible serverless DB. Hyperdrive = connection pool proxy to existing Postgres |
+| Monorepo | Workers + Pages | 0 | Automated | Supported | Configure build output path per app |
+| Rewrites | `_redirects` file (status 200) or next.config rewrites | 0 | Automated | Supported | Move from `vercel.json` to framework-native or `_redirects` |
+| Redirects | `_redirects` file or next.config redirects | 0 | Automated | Supported | Move from `vercel.json` to framework-native or `_redirects` |
+| Headers | `_headers` file or next.config headers | 0 | Automated | Supported | Move from `vercel.json` to framework-native or `_headers` |
 
 ---
 
