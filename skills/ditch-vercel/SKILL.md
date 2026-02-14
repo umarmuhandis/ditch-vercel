@@ -224,7 +224,75 @@ Each task description must include the exact command or file change. Do NOT comb
 
 ## Phase 4: EXECUTE
 
-_Coming next._
+Execute the approved plan with safety nets and real-time task tracking.
+
+### 4a. Git safety checkpoint
+
+Set the checkpoint task to `in_progress`.
+
+1. Check `git status`. If working tree is dirty:
+   ```bash
+   git add -A && git commit -m "chore: pre-migration checkpoint (ditch-vercel)"
+   ```
+2. If working tree is clean, note the current HEAD SHA.
+3. Store the checkpoint SHA for rollback.
+4. Mark the checkpoint task as `completed`.
+5. Output:
+   ```
+   Safety checkpoint created (commit: <sha-short>). To undo: git reset --hard <sha>
+   ```
+
+### 4b. Detect package manager
+
+Check the project root for lock files (first match wins):
+
+| Lock file            | Package manager |
+|----------------------|-----------------|
+| `bun.lockb` or `bun.lock` | `bun`     |
+| `pnpm-lock.yaml`    | `pnpm`          |
+| `yarn.lock`         | `yarn`          |
+| `package-lock.json` | `npm`           |
+
+If no lock file found, default to `npm`.
+
+### 4c. Execute each task
+
+For each remaining task (dependencies, files, deletions):
+
+1. Set task status to `in_progress` using `TaskUpdate`
+2. Execute the action:
+   - **Install dep**: `[pkg-manager] add <pkg>` / `[pkg-manager] add -D <pkg>`
+   - **Remove dep**: `[pkg-manager] remove <pkg>`
+   - **Create file**: Use `Write` tool
+   - **Modify file**: Use `Edit` tool
+   - **Delete file**: Use `Bash` with `rm`
+3. If successful: set task status to `completed`
+4. If failed: keep status as `in_progress`, show the error, and ask the developer using `AskUserQuestion`:
+   - **"Fix it"** → Read the error, attempt a fix, retry the action
+   - **"Skip this step"** → Update task description with "[SKIPPED]", set to `completed`, continue
+   - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, mark all remaining tasks as `deleted`, stop execution
+
+### 4d. Build verification
+
+After all file changes are complete:
+
+1. Set the build verification task to `in_progress`
+2. Detect the build command:
+   - Next.js + Cloudflare: `npm run build:cf` (or the build:cf script added in migration)
+   - Astro: `astro build`
+   - Remix: `remix vite:build`
+   - SvelteKit: `npm run build`
+   - Nuxt: `nuxt build`
+   - Static with build script: `npm run build`
+   - Static without build: skip (no build needed)
+3. Run the build command via `Bash`
+4. If build passes: mark task `completed`
+5. If build fails:
+   - Show the error output (first 50 lines)
+   - Ask the developer using `AskUserQuestion`:
+     - **"Fix it"** → Read the error, attempt to fix the code, re-run the build
+     - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, stop
+     - **"Continue anyway"** → Mark task `completed` with note "[BUILD FAILED - manual fix needed]"
 
 ## Phase 5: DONE
 
