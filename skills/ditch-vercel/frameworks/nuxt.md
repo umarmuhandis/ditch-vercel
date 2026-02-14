@@ -1,0 +1,126 @@
+# Nuxt — Vercel to Cloudflare Migration
+
+## Detection
+
+**package.json:** `nuxt` in `dependencies` or `devDependencies`
+
+**Config files:** `nuxt.config.ts`, `nuxt.config.js`
+
+**Vercel indicator:** `vercel` preset in `nuxt.config`, or `NITRO_PRESET=vercel` environment variable, or `@nuxtjs/vercel-analytics` in modules
+
+---
+
+## Migration Steps
+
+### 1. Set Nitro preset to Cloudflare Pages
+
+Update `nuxt.config.ts` to use the `cloudflare-pages` preset:
+
+```ts
+export default defineNuxtConfig({
+  nitro: {
+    preset: 'cloudflare-pages',
+  },
+});
+```
+
+If the config previously had `preset: 'vercel'` or `preset: 'vercel-edge'`, replace it.
+
+### 2. Remove Vercel-specific modules
+
+If `nuxt.config.ts` uses Vercel-specific modules, remove them:
+
+```ts
+// Remove from modules array:
+// - '@nuxtjs/vercel-analytics'
+// - Any other Vercel-specific Nuxt module
+```
+
+Uninstall the packages:
+
+```bash
+npm uninstall @nuxtjs/vercel-analytics
+```
+
+### 3. Create `wrangler.toml`
+
+Create `wrangler.toml` in the project root. Derive `name` from `package.json` `name`:
+
+```toml
+name = "<project-name-from-package.json>"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "dist/"
+```
+
+### 4. Update `package.json` scripts
+
+```json
+{
+  "scripts": {
+    "deploy": "nuxt build && wrangler pages deploy dist/",
+    "preview": "nuxt build && wrangler pages dev dist/"
+  }
+}
+```
+
+Keep the existing `dev`, `build`, `generate`, and `postinstall` scripts unchanged.
+
+### 5. Migrate `vercel.json` config
+
+If `vercel.json` has rewrites/redirects/headers:
+- **Redirects:** Create a `public/_redirects` file (format: `from to statusCode`)
+- **Headers:** Create a `public/_headers` file (format: `[path]\n  Header-Name: value`)
+- **Rewrites:** Create entries in `public/_redirects` with status `200`
+
+Alternatively, Nuxt handles redirects and rewrites natively via `routeRules` in `nuxt.config.ts`:
+
+```ts
+export default defineNuxtConfig({
+  routeRules: {
+    '/old-path': { redirect: '/new-path' },
+    '/api/**': { proxy: 'https://backend.example.com/**' },
+  },
+});
+```
+
+### 6. Delete `vercel.json`
+
+Remove `vercel.json` from the project root.
+
+---
+
+## Compatibility Notes
+
+### Supported
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| SSR | Supported | Nitro has native Cloudflare Pages preset. First-class support. |
+| Static generation (`nuxt generate`) | Supported | Pre-rendered pages deploy as static assets on Cloudflare Pages. |
+| Hybrid rendering (`routeRules`) | Supported | Per-route rendering rules work with the Cloudflare preset. |
+| API routes (`server/api/`) | Supported | Run as Cloudflare Workers via Nitro. |
+| Server middleware | Supported | Runs in the Worker. |
+| Nitro route rules | Supported | `routeRules` for caching, redirects, prerendering work on Cloudflare. |
+
+### Partial
+
+| Feature | Status | Action |
+|---------|--------|--------|
+| `nuxt/image` (`@nuxt/image`) | Partial | The Vercel provider (`provider: 'vercel'`) must be replaced. Use `provider: 'cloudflare'` for Cloudflare Image Resizing (requires compatible plan), or `provider: 'ipx'` for self-hosted optimization, or an external provider. |
+| Node.js APIs | Partial | Workers runtime has limited Node.js compat. Use `nodejs_compat` flag. File system APIs are NOT available at runtime. |
+| ISR | Partial | Nitro supports `routeRules` with `swr` (stale-while-revalidate) on Cloudflare. Configure cache duration per route. |
+| NuxtHub | Supported | If using NuxtHub, it provides native Cloudflare KV, D1, and R2 bindings with zero config. Consider adopting NuxtHub for the easiest Cloudflare integration. |
+
+### Manual
+
+| Feature | Replacement | Action |
+|---------|-------------|--------|
+| `@nuxtjs/vercel-analytics` | Cloudflare Web Analytics | Remove the module from `nuxt.config.ts` `modules` array. Uninstall the package. Add Cloudflare Web Analytics JS snippet to `app.vue` or a Nuxt plugin. |
+| `@vercel/analytics` | Cloudflare Web Analytics | Remove the package. Add Cloudflare Web Analytics snippet. |
+| `@vercel/speed-insights` | None (remove) | No direct equivalent. Remove the package. |
+| `@vercel/blob` | Cloudflare R2 | Different API. Access R2 via `hubBlob()` (NuxtHub) or Nitro's `useStorage()` with Cloudflare driver. |
+| `@vercel/kv` | Cloudflare KV | Different API. Access KV via `hubKV()` (NuxtHub) or Nitro's `useStorage()` with Cloudflare KV driver. |
+| `@vercel/postgres` | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Access via `hubDatabase()` (NuxtHub) or Nitro's `useDatabase()`. Hyperdrive can proxy existing Postgres. |
