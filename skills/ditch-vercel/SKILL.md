@@ -153,7 +153,74 @@ If "Yes": proceed to Phase 3.
 
 ## Phase 3: PLAN + APPROVE
 
-_Coming next._
+Generate a concrete migration plan, get explicit approval, then create the task list.
+
+### 3a. Generate the migration plan
+
+Based on Phases 1-2, produce a specific plan. List exact file paths, package names, and what changes will be made. Tag each item with its category.
+
+```
+Migration Plan: [Framework] on Vercel → [Target]
+═══════════════════════════════════════════════════
+
+Dependencies to ADD:
+  - [package] [Automated]
+  - ...
+
+Dependencies to REMOVE:
+  - [package] [Automated]
+  - ...
+
+Files to CREATE:
+  - [filepath] — [description] [Automated]
+  - ...
+
+Files to MODIFY:
+  - [filepath] — [description] [category]
+  - ...
+
+Files to DELETE:
+  - [filepath] [Automated]
+  - ...
+
+Manual Action Items (post-migration):
+  - [item] [Attention/Blocker]
+  - ...
+```
+
+Each entry must be specific enough that the developer understands exactly what will happen.
+
+### 3b. Approval gate
+
+**This is a hard gate. Do NOT proceed without explicit approval.**
+
+Use `AskUserQuestion`:
+
+```
+Approve the migration plan?
+- "Yes, proceed with migration"
+- "Modify the plan" → gather feedback, revise, re-approve
+- "Cancel migration" → stop, no changes
+```
+
+If "Modify the plan": loop — gather feedback, revise the plan, present for approval again.
+If "Cancel migration": stop. Output: `Migration cancelled. No changes made.`
+
+**CRITICAL: Do NOT create, modify, or delete any project files before receiving "Yes, proceed with migration".**
+
+### 3c. Create the task list
+
+After the developer approves, immediately create tasks using `TaskCreate` for each migration action, in this exact order:
+
+1. **"Create git safety checkpoint"** (activeForm: "Creating safety checkpoint")
+2. One task per dependency to install (activeForm: "Installing [package]")
+3. One task per dependency to remove (activeForm: "Removing [package]")
+4. One task per file to create (activeForm: "Creating [filename]")
+5. One task per file to modify (activeForm: "Updating [filename]")
+6. One task per file to delete (activeForm: "Deleting [filename]")
+7. **"Run build verification"** (activeForm: "Verifying build")
+
+Each task description must include the exact command or file change. Do NOT combine multiple actions into one task. Each task = one atomic action.
 
 ## Phase 4: EXECUTE
 
