@@ -1,0 +1,28 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ditch-vercel",
+  "owner": {
+    "name": "Umar Muhandis"
+  },
+  "metadata": {
+    "description": "AI-powered migration from Vercel to other platforms",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "ditch-vercel",
+      "description": "Migrate your project from Vercel to any platform. AI-powered analysis, planning, and execution.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Umar Muhandis"
+      },
+      "homepage": "https://github.com/umarmuhandis/ditch-vercel",
+      "repository": "https://github.com/umarmuhandis/ditch-vercel",
+      "license": "MIT",
+      "source": "./",
+      "category": "deployment",
+      "keywords": ["vercel", "cloudflare", "migration", "deploy"],
+      "skills": ["./skills/ditch-vercel"]
+    }
+  ]
+}

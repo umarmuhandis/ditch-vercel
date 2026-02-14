@@ -217,6 +217,7 @@ After the developer approves, immediately create tasks using `TaskCreate` for ea
 5. One task per file to modify (activeForm: "Updating [filename]")
 6. One task per file to delete (activeForm: "Deleting [filename]")
 7. **"Run build verification"** (activeForm: "Verifying build")
+8. **"Run local dev server verification"** (activeForm: "Verifying local dev server")
 
 Each task description must include the exact command or file change. Do NOT combine multiple actions into one task. Each task = one atomic action.
 
@@ -292,6 +293,30 @@ After all file changes are complete:
      - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, stop
      - **"Continue anyway"** → Mark task `completed` with note "[BUILD FAILED - manual fix needed]"
 
+### 4e. Local dev server verification
+
+After build passes, verify the app starts and responds locally.
+
+1. Set the local dev server task to `in_progress`
+2. Detect the preview command:
+   - Next.js + Cloudflare: `npx wrangler dev` (port 8787)
+   - Astro + Cloudflare: `npx wrangler pages dev dist/` (port 8788)
+   - Remix + Cloudflare: `npx wrangler pages dev build/client` (port 8788)
+   - SvelteKit + Cloudflare: `npx wrangler pages dev .svelte-kit/cloudflare` (port 8788)
+   - Nuxt + Cloudflare: `npx wrangler pages dev dist/` (port 8788)
+   - Static: `npx wrangler pages dev <output-dir>` (port 8788)
+3. Start the preview command in the background via Bash (run_in_background)
+4. Wait ~5 seconds for the server to start
+5. Run `curl -s -o /dev/null -w "%{http_code}" http://localhost:<port>/` to check for a 200 response
+6. Kill the background process
+7. If curl returns 200: mark task `completed`
+8. If curl fails or non-200:
+   - Show the output
+   - Ask the developer using `AskUserQuestion`:
+     - **"Fix it"** → investigate, fix, retry
+     - **"Skip"** → mark completed with "[DEV SERVER CHECK SKIPPED]"
+     - **"Rollback everything"** → `git reset --hard <checkpoint-sha>`, stop
+
 ## Phase 5: DONE
 
 Output the final migration summary with everything the developer needs.
@@ -313,10 +338,9 @@ Output the final migration summary with everything the developer needs.
   [list any Attention/Blocker items from the report that weren't fully automated]
 
   NEXT STEPS:
-  1. [local dev command] — test locally
-  2. [deploy command] — deploy to [target]
-  3. Set environment variables in [target] dashboard
-  4. [any other manual items]
+  1. [deploy command] — deploy to [target]
+  2. Set environment variables in [target] dashboard
+  3. [any other manual items]
 
   To undo everything:
   git reset --hard [checkpoint-sha]
