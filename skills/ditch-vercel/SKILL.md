@@ -116,7 +116,7 @@ Compatibility Report: Vercel → Cloudflare
 ──────────────────────────────────────────
 Feature              Status     Notes
 ──────────────────────────────────────────
-next/image           Partial    Use @cloudflare/next-on-pages image loader or unpic
+next/image           Partial    Use Cloudflare Image Resizing or custom loader
 ISR                  Partial    Use on-demand revalidation via Cache API
 API Routes           Supported  Runs as Cloudflare Workers
 Edge Runtime         Supported  Native on Cloudflare Workers
@@ -145,7 +145,7 @@ Migration Plan: [Framework] on Vercel → Cloudflare
 ═══════════════════════════════════════════════════
 
 Dependencies to ADD:
-  - @cloudflare/next-on-pages (if Next.js)
+  - @opennextjs/cloudflare (if Next.js)
   - wrangler (dev dependency)
   - ...
 
@@ -249,7 +249,7 @@ Remove Vercel-specific files (e.g., `vercel.json`) using Bash `rm`.
 ```
 Migration Executed
 ══════════════════
-Packages installed: @cloudflare/next-on-pages, wrangler
+Packages installed: @opennextjs/cloudflare, wrangler
 Packages removed: @vercel/analytics, @vercel/speed-insights
 Files created: wrangler.toml
 Files modified: next.config.js, src/app/layout.tsx
@@ -265,7 +265,7 @@ Print a clear post-migration checklist for the user.
 **Always include:**
 
 1. **Build verification command** — The exact command to test the build locally:
-   - Next.js on Cloudflare: `npx @cloudflare/next-on-pages` (or equivalent with detected pkg manager)
+   - Next.js on Cloudflare: `npx @opennextjs/cloudflare` (or equivalent with detected pkg manager)
    - Astro on Cloudflare: `astro build`
    - Other frameworks: the appropriate build command
 
