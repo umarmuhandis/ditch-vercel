@@ -1,0 +1,12 @@
+{
+  "name": "ditch-vercel",
+  "version": "0.1.0",
+  "description": "Migrate your project from Vercel to any platform. AI-powered analysis, planning, and execution.",
+  "author": {
+    "name": "Umar Muhandis",
+    "url": "https://github.com/umarmuhandis"
+  },
+  "repository": "https://github.com/umarmuhandis/ditch-vercel",
+  "license": "MIT",
+  "keywords": ["vercel", "cloudflare", "migration", "deploy"]
+}
