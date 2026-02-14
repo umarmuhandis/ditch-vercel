@@ -149,8 +149,6 @@ If "Yes": proceed to Phase 3.
 
 ---
 
-<!-- Phases 3-5 will be added in subsequent commits -->
-
 ## Phase 3: PLAN + APPROVE
 
 Generate a concrete migration plan, get explicit approval, then create the task list.
@@ -296,7 +294,36 @@ After all file changes are complete:
 
 ## Phase 5: DONE
 
-_Coming next._
+Output the final migration summary with everything the developer needs.
+
+### 5a. Migration summary
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  MIGRATION COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Created:   [list files]
+  Modified:  [list files]
+  Removed:   [list files]
+  Installed: [list packages]
+  Removed:   [list packages]
+
+  STILL NEEDS YOUR ATTENTION:
+  [list any Attention/Blocker items from the report that weren't fully automated]
+
+  NEXT STEPS:
+  1. [local dev command] — test locally
+  2. [deploy command] — deploy to [target]
+  3. Set environment variables in [target] dashboard
+  4. [any other manual items]
+
+  To undo everything:
+  git reset --hard [checkpoint-sha]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Only include "STILL NEEDS YOUR ATTENTION" if there are remaining items. Derive the local dev command, deploy command, and manual items from the target knowledge file and framework knowledge file.
 
 ---
 
@@ -308,3 +335,6 @@ _Coming next._
 - **Handle errors**: If a knowledge file is missing, work from your own knowledge but warn the user. If a scan finds nothing, say so explicitly rather than guessing.
 - **One framework only**: If multiple frameworks are detected, ask the user to clarify which one is the primary framework.
 - **Monorepo awareness**: If the project root contains `apps/` or `packages/` directories, ask the user which app to migrate.
+- **Always use TaskCreate/TaskUpdate** to track execution progress during Phase 4.
+- **Task #1 must always be the git safety checkpoint.**
+- **Never mark a task as completed if the action failed.** Failed tasks stay `in_progress` with recovery options presented to the developer.
