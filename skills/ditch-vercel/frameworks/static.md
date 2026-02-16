@@ -1,4 +1,4 @@
-# Static Site — Vercel to Cloudflare Migration
+# Static Site — Vercel Migration
 
 ## Detection
 
@@ -16,7 +16,7 @@
 
 ---
 
-## Migration Steps
+## Migration Steps (Cloudflare)
 
 ### 1. Determine the output directory
 
@@ -149,7 +149,70 @@ Remove `vercel.json` from the project root.
 
 ---
 
-## Compatibility Notes
+---
+
+## Migration Steps (VPS)
+
+### 1. Determine the output directory
+
+Identify where the built/static files live (same as Cloudflare step 1):
+
+| Tool/Setup | Typical output dir |
+|------------|-------------------|
+| Vite | `dist/` |
+| Create React App | `build/` |
+| Webpack | `dist/` or `build/` |
+| Parcel | `dist/` |
+| Hugo | `public/` |
+| Jekyll | `_site/` |
+| Eleventy (11ty) | `_site/` |
+| Plain HTML (no build) | `.` (project root) |
+
+### 2. Migrate `vercel.json` to Nginx config
+
+If `vercel.json` has headers, redirects, or rewrites, move them to the Nginx server block.
+
+**Redirects:**
+```nginx
+# vercel.json: { "source": "/old", "destination": "/new", "permanent": true }
+rewrite ^/old$ /new permanent;
+```
+
+**Headers:**
+```nginx
+# vercel.json: { "source": "/(.*)", "headers": [{ "key": "X-Frame-Options", "value": "DENY" }] }
+add_header X-Frame-Options DENY;
+```
+
+**Rewrites (SPA fallback):**
+```nginx
+# vercel.json: { "source": "/(.*)", "destination": "/index.html" }
+location / {
+    try_files $uri $uri/ /index.html;
+}
+```
+
+### 3. Update `package.json` scripts
+
+Remove any Vercel/Cloudflare deploy scripts. If there's a build step:
+
+```json
+{
+  "scripts": {
+    "deploy": "npm run build"
+  }
+}
+```
+
+### 4. Delete `vercel.json`
+
+Remove `vercel.json` from the project root.
+
+**Note:** Static sites on VPS do NOT need PM2 or a Node.js process. Nginx serves the files directly from the output directory. See the Nginx static site block template in [targets/vps.md](../targets/vps.md).
+
+---
+
+## Compatibility Notes (Cloudflare)
 
 ### Supported
 
@@ -180,3 +243,27 @@ Static sites do not use server-side features, so the following Vercel features a
 - ISR
 - SSR
 - API routes (unless adding Cloudflare Workers separately)
+
+---
+
+## Compatibility Notes (VPS)
+
+### Supported
+
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| Static HTML/CSS/JS | 0 | Automated | Supported | Nginx serves static assets directly. Gzip compression via `gzip on;` in Nginx config. |
+| Custom domains | 0 | Automated | Supported | Configure in Nginx server block. SSL via Let's Encrypt + Certbot. |
+| SPA routing (client-side) | 0 | Automated | Supported | Use `try_files $uri $uri/ /index.html;` in Nginx for SPA fallback. |
+| Custom headers | 0 | Automated | Supported | Use `add_header` directives in Nginx config. |
+| Redirects | 0 | Automated | Supported | Use `rewrite` directives in Nginx config. |
+| 404 pages | 0 | Automated | Supported | Use `error_page 404 /404.html;` in Nginx config. |
+| Clean URLs | 0 | Automated | Supported | Use `try_files $uri $uri.html $uri/ =404;` in Nginx config. |
+
+### Limits
+
+No hard limits — constrained only by VPS disk space and Nginx configuration. No file count or file size restrictions beyond what the filesystem supports.
+
+### Not Applicable
+
+Static sites on VPS do not use server-side features. No PM2 or Node.js process is needed — Nginx serves files directly.
