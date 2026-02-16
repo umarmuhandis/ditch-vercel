@@ -64,6 +64,29 @@ Mapping of Vercel features to Cloudflare equivalents. Use this to generate the c
 
 ---
 
+## Plan Tier Limits
+
+Reference for adjusting complexity scores based on the user's Cloudflare plan tier (gathered in Phase 1d).
+
+| Limit | Free | Pro ($20/mo) | Business ($200/mo) | Enterprise |
+|-------|------|-------------|---------------------|------------|
+| Worker script size | 1 MB compressed | 10 MB compressed | 10 MB compressed | 25 MB compressed |
+| Pages Functions size | 1 MB compressed | 1 MB compressed | 1 MB compressed | 1 MB compressed |
+| CPU time per request | 10 ms | 50 ms | 50 ms | Configurable |
+| Image Resizing | No | No | Yes | Yes |
+| Workers KV reads/day | 100,000 | 10M+ | 10M+ | Custom |
+| R2 storage | 10 GB free | 10 GB free | 10 GB free | Custom |
+| D1 rows read/day | 5M | 25B | 25B | Custom |
+| Pages builds/month | 500 | 5,000 | 20,000 | Custom |
+
+**Scoring adjustments based on tier:**
+- Image optimization on Free/Pro: Weight 3 (Blocker) — no Image Resizing available. Recommend custom loader (unpic, cloudinary, imgix).
+- Image optimization on Business+: Weight 1 (Attention) — Image Resizing available.
+- Bundle size on Free tier: stricter limit (1 MB compressed for Pages Functions). Flag if project has large serverless functions.
+- CPU-intensive operations on Free tier: 10 ms limit. Flag if project uses heavy computation in request handlers.
+
+---
+
 ## General `wrangler.toml` Template
 
 Base configuration for any framework. Framework-specific files (e.g., `nextjs.md`) extend this with additional fields like `main` and `[assets]`.
@@ -118,3 +141,93 @@ crons = ["0 * * * *", "*/15 * * * *"]
 | Create KV namespace | `npx wrangler kv namespace create <NAME>` |
 | Create R2 bucket | `npx wrangler r2 bucket create <NAME>` |
 | Create D1 database | `npx wrangler d1 create <NAME>` |
+
+---
+
+## GitHub Actions Workflow Templates
+
+Use these when the user selects GitHub Actions as their deploy method in Phase 1d. Create `.github/workflows/deploy.yml` during Phase 4 execution.
+
+### For Workers (Next.js via OpenNext):
+
+```yaml
+name: Deploy to Cloudflare Workers
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run build:cf
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+```
+
+### For Pages (Astro, Remix, SvelteKit, Nuxt, Static):
+
+```yaml
+name: Deploy to Cloudflare Pages
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run build
+      - uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: <project-name>
+          directory: <output-directory>
+```
+
+**Required GitHub secrets:**
+- `CLOUDFLARE_API_TOKEN` — Create at Cloudflare dashboard → My Profile → API Tokens → Create Token → "Edit Cloudflare Workers" template
+- `CLOUDFLARE_ACCOUNT_ID` — Found at Cloudflare dashboard → Workers & Pages → right sidebar
+
+---
+
+## Domain Migration Steps
+
+Use this when the user has a custom domain to migrate from Vercel (gathered in Phase 1d).
+
+### If domain DNS is already on Cloudflare:
+
+1. Go to Workers & Pages → [project] → Custom Domains → Add
+2. Enter the domain name — Cloudflare auto-configures the DNS record
+3. Remove the domain from Vercel dashboard (Settings → Domains → Remove)
+
+### If domain DNS is NOT on Cloudflare (e.g., Vercel DNS or external registrar):
+
+**Option A — Transfer DNS to Cloudflare (recommended):**
+1. Add site to Cloudflare dashboard
+2. Update nameservers at your registrar to Cloudflare's assigned nameservers
+3. Wait for DNS propagation (up to 24 hours)
+4. Add custom domain to Workers/Pages project
+
+**Option B — CNAME setup (keep DNS elsewhere):**
+1. Get the Workers/Pages project URL (e.g., `<project>.pages.dev` or `<project>.<subdomain>.workers.dev`)
+2. Create a CNAME record at your DNS provider pointing your domain to the project URL
+3. Add the custom domain in Cloudflare dashboard for SSL provisioning
+
+### After DNS setup:
+
+- **SSL:** Cloudflare provides free SSL automatically. No configuration needed.
+- **Verification:** After DNS propagation, verify at `https://[domain]` that the app loads correctly.
+- **Cleanup:** Remove the domain from Vercel dashboard (Settings → Domains → Remove)
