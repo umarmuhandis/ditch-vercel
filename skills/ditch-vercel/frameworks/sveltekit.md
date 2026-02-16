@@ -1,4 +1,4 @@
-# SvelteKit — Vercel to Cloudflare Migration
+# SvelteKit — Vercel Migration
 
 ## Detection
 
@@ -10,7 +10,7 @@
 
 ---
 
-## Migration Steps
+## Migration Steps (Cloudflare)
 
 ### 1. Uninstall Vercel adapter
 
@@ -119,7 +119,88 @@ Remove `vercel.json` from the project root.
 
 ---
 
-## Compatibility Notes
+---
+
+## Migration Steps (VPS)
+
+### 1. Uninstall Vercel adapter
+
+```bash
+npm uninstall @sveltejs/adapter-vercel
+```
+
+### 2. Install Node.js adapter
+
+```bash
+npm install -D @sveltejs/adapter-node
+```
+
+### 3. Update `svelte.config.js`
+
+Replace the Vercel adapter with the Node.js adapter:
+
+**Before:**
+```js
+import adapter from '@sveltejs/adapter-vercel';
+
+export default {
+  kit: {
+    adapter: adapter(),
+  },
+};
+```
+
+**After:**
+```js
+import adapter from '@sveltejs/adapter-node';
+
+export default {
+  kit: {
+    adapter: adapter(),
+  },
+};
+```
+
+### 4. Update `package.json` scripts
+
+```json
+{
+  "scripts": {
+    "start": "node build/index.js"
+  }
+}
+```
+
+Keep the existing `dev`, `build`, and `check` scripts unchanged.
+
+### 5. Create PM2 ecosystem config
+
+Create `ecosystem.config.js` in the project root:
+
+```js
+module.exports = {
+  apps: [{
+    name: '<project-name-from-package.json>',
+    script: 'build/index.js',
+    instances: 'max',
+    exec_mode: 'cluster',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 3000,
+    },
+  }],
+};
+```
+
+### 6. Migrate `vercel.json` and clean up
+
+If `vercel.json` has rewrites/redirects/headers, move them to SvelteKit hooks (`hooks.server.ts`) or Nginx config.
+
+Delete `vercel.json` from the project root.
+
+---
+
+## Compatibility Notes (Cloudflare)
 
 ### Supported
 
@@ -151,3 +232,33 @@ Remove `vercel.json` from the project root.
 | `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `platform.env.KV_NAMESPACE`. Add KV binding to `wrangler.toml`. |
 | `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Hyperdrive proxies existing Postgres. Access via `platform.env`. |
 | Edge config (`@vercel/edge-config`) | 1 | Attention | Cloudflare KV | Replace with KV namespace for key-value configuration data. |
+
+---
+
+## Compatibility Notes (VPS)
+
+### Supported
+
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| SSR | 0 | Automated | Supported | `@sveltejs/adapter-node` produces a self-contained Node.js server. |
+| Prerendering | 0 | Automated | Supported | Static pages generated at build time. Works unchanged. |
+| API routes (`+server.ts`) | 0 | Automated | Supported | Run as part of the Node.js server process. |
+| Form actions | 0 | Automated | Supported | Works unchanged. |
+| Hooks (`hooks.server.ts`) | 0 | Automated | Supported | Run in the Node.js process. |
+| Load functions | 0 | Automated | Supported | Both universal and server load functions work. |
+| Streaming | 0 | Automated | Supported | Works natively in Node.js. |
+| Node.js APIs | 0 | Automated | Supported | Full Node.js API access — no restrictions. `fs`, `path`, `crypto`, native addons all work. |
+| `$env/static/private` | 0 | Automated | Supported | Works natively with `.env` files. No special configuration needed. |
+| Image optimization | 1 | Attention | Partial | No built-in equivalent to Vercel's image optimization. Use `sharp` for server-side processing or an external image service. |
+
+### Manual
+
+| Feature | Weight | Category | Replacement | Action |
+|---------|--------|----------|-------------|--------|
+| `@vercel/analytics` | 1 | Attention | Plausible / Umami | Remove the package. Add analytics provider JS snippet to `src/app.html` `<head>`. |
+| `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package and component. |
+| `@vercel/blob` | 1 | Attention | Local filesystem or S3 SDK | Replace with `fs` for local storage or `@aws-sdk/client-s3` for S3-compatible storage. |
+| `@vercel/kv` | 1 | Attention | Redis (`ioredis`) | Install Redis. Replace `@vercel/kv` with `ioredis`. |
+| `@vercel/postgres` | 1 | Attention | PostgreSQL (`pg`) | Install PostgreSQL. Replace `@vercel/postgres` with `pg`. Direct connection. If using Prisma or Drizzle, just update the connection string. |
+| Edge config (`@vercel/edge-config`) | 1 | Attention | Redis or config file | Replace with Redis for dynamic config or a JSON config file for static config. |
