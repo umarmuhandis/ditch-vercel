@@ -17,7 +17,7 @@ Silently detect framework, Vercel features, and target platform in one pass. Min
 
 ### 1a. Detect framework
 
-Read `package.json` — examine `dependencies` and `devDependencies`. Check for framework config files using Glob. Match against this table (first match wins):
+Read `package.json` — examine `dependencies` and `devDependencies`. Check for framework config files. Match against this table (first match wins):
 
 | Framework  | package.json indicator             | Config file pattern        |
 |------------|------------------------------------|----------------------------|
@@ -54,10 +54,10 @@ Scan for every Vercel-specific feature. Check every item — do NOT skip any.
 - Any other `@vercel/*` package
 
 **Framework-specific Vercel features** — Scan source files:
-- **Edge Runtime**: Grep for `export const runtime = 'edge'` or `export const runtime = "edge"` in route/API files.
-- **next/image**: Grep for `import.*from ['"]next/image['"]` — Vercel's image optimization is used.
-- **ISR**: Grep for `export const revalidate` or `revalidate:` in page/route files.
-- **API Routes**: Glob for `app/api/**/route.{ts,js}` or `pages/api/**/*.{ts,js}` (Next.js), or equivalent in other frameworks.
+- **Edge Runtime**: Search for `export const runtime = 'edge'` or `export const runtime = "edge"` in route/API files.
+- **next/image**: Search for `import.*from ['"]next/image['"]` — Vercel's image optimization is used.
+- **ISR**: Search for `export const revalidate` or `revalidate:` in page/route files.
+- **API Routes**: Search for `app/api/**/route.{ts,js}` or `pages/api/**/*.{ts,js}` (Next.js), or equivalent in other frameworks.
 - **Middleware**: Check for `middleware.{ts,js}` at project root or `src/`.
 - **Cron jobs**: Check `vercel.json` for `crons` field.
 - **Environment variables**: Check for `.env*` files. Note which env vars exist (names only, never values).
@@ -65,7 +65,7 @@ Scan for every Vercel-specific feature. Check every item — do NOT skip any.
 
 ### 1c. Select target platform
 
-Use `AskUserQuestion` to ask the target platform:
+Ask the user to choose the target platform:
 
 ```
 Where do you want to migrate?
@@ -137,7 +137,7 @@ Only include sections that have items. If there are no Blockers, omit the BLOCKE
 
 ### 2d. Ask the developer
 
-Use `AskUserQuestion`:
+Ask the user:
 
 ```
 Ready to migrate?
@@ -194,7 +194,7 @@ Each entry must be specific enough that the developer understands exactly what w
 
 **This is a hard gate. Do NOT proceed without explicit approval.**
 
-Use `AskUserQuestion`:
+Ask the user:
 
 ```
 Approve the migration plan?
@@ -208,20 +208,21 @@ If "Cancel migration": stop. Output: `Migration cancelled. No changes made.`
 
 **CRITICAL: Do NOT create, modify, or delete any project files before receiving "Yes, proceed with migration".**
 
-### 3c. Create the task list
+### 3c. Build the execution checklist
 
-After the developer approves, immediately create tasks using `TaskCreate` for each migration action, in this exact order:
+After the developer approves, build an ordered checklist of every migration action. Track each item's progress throughout Phase 4 (announce when starting and completing each step). If your agent supports built-in task tracking, use it.
 
-1. **"Create git safety checkpoint"** (activeForm: "Creating safety checkpoint")
-2. One task per dependency to install (activeForm: "Installing [package]")
-3. One task per dependency to remove (activeForm: "Removing [package]")
-4. One task per file to create (activeForm: "Creating [filename]")
-5. One task per file to modify (activeForm: "Updating [filename]")
-6. One task per file to delete (activeForm: "Deleting [filename]")
-7. **"Run build verification"** (activeForm: "Verifying build")
-8. **"Run local dev server verification"** (activeForm: "Verifying local dev server")
+Execution order:
+1. **Create git safety checkpoint**
+2. One item per dependency to install
+3. One item per dependency to remove
+4. One item per file to create
+5. One item per file to modify
+6. One item per file to delete
+7. **Run build verification**
+8. **Run local dev server verification**
 
-Each task description must include the exact command or file change. Do NOT combine multiple actions into one task. Each task = one atomic action.
+Each item must describe one atomic action with the exact command or file change.
 
 ## Phase 4: EXECUTE
 
@@ -229,7 +230,7 @@ Execute the approved plan with safety nets and real-time task tracking.
 
 ### 4a. Git safety checkpoint
 
-Set the checkpoint task to `in_progress`.
+Begin the git safety checkpoint.
 
 1. Check `git status`. If working tree is dirty:
    ```bash
@@ -237,7 +238,7 @@ Set the checkpoint task to `in_progress`.
    ```
 2. If working tree is clean, note the current HEAD SHA.
 3. Store the checkpoint SHA for rollback.
-4. Mark the checkpoint task as `completed`.
+4. Mark the checkpoint step as done.
 5. Output:
    ```
    Safety checkpoint created (commit: <sha-short>). To undo: git reset --hard <sha>
@@ -261,8 +262,8 @@ If no lock file found, default to `npm`.
 Before executing file changes, verify migration steps against current official documentation.
 
 1. Read the `## Reference URLs` section from the loaded framework file and target file
-2. **Prefer `llms.txt` URLs** (lines prefixed with `llms.txt:`) — these are machine-readable doc indexes optimized for LLMs. Fetch with `WebFetch` and use the index to locate the specific migration/deployment page, then fetch that page. If no `llms.txt` entry exists for a source, fall back to the regular doc URLs.
-3. Fetch each URL using `WebFetch` with prompt: "Extract the current migration steps, required packages, config format, and any breaking changes or deprecation notices"
+2. **Prefer `llms.txt` URLs** (lines prefixed with `llms.txt:`) — these are machine-readable doc indexes optimized for LLMs. Fetch the `llms.txt` URL and use the index to locate the specific migration/deployment page, then fetch that page. If no `llms.txt` entry exists for a source, fall back to the regular doc URLs.
+3. Fetch each URL and extract: current migration steps, required packages, config format, and any breaking changes or deprecation notices
 4. Compare fetched content against the migration steps you're about to execute. Look for:
    - Package name changes (e.g. adapter renamed)
    - New required config fields
@@ -270,8 +271,8 @@ Before executing file changes, verify migration steps against current official d
    - Changed build output directories
 5. If discrepancies found:
    - Show the user: "Official docs differ from migration template on: [list]"
-   - Use `AskUserQuestion`: **"Follow official docs"** / **"Follow template"** / **"Let me decide per item"**
-6. If WebFetch fails for any URL: skip silently, proceed with framework file instructions
+   - Ask the user: **"Follow official docs"** / **"Follow template"** / **"Let me decide per item"**
+6. If fetching fails for any URL: skip silently, proceed with framework file instructions
 7. Do NOT fetch URLs during Phase 1-3 (wastes context before user commits to migration)
 
 ### 4d. Execute each task
@@ -280,24 +281,24 @@ For each remaining task (dependencies, files, deletions):
 
 **Important:** Follow the migration steps section in the framework knowledge file that matches the selected target platform. For example, if the target is VPS, follow `## Migration Steps (VPS)`. If the target is Cloudflare, follow `## Migration Steps (Cloudflare)`. Use the corresponding `## Compatibility Notes ([target])` section for replacement guidance.
 
-1. Set task status to `in_progress` using `TaskUpdate`
+1. Announce the step you're starting
 2. Execute the action:
    - **Install dep**: `[pkg-manager] add <pkg>` / `[pkg-manager] add -D <pkg>`
    - **Remove dep**: `[pkg-manager] remove <pkg>`
-   - **Create file**: Use `Write` tool
-   - **Modify file**: Use `Edit` tool
-   - **Delete file**: Use `Bash` with `rm`
-3. If successful: set task status to `completed`
-4. If failed: keep status as `in_progress`, show the error, and ask the developer using `AskUserQuestion`:
+   - **Create file**: Create the file
+   - **Modify file**: Edit the file
+   - **Delete file**: Delete the file (e.g. `rm`)
+3. If successful: mark the step as done
+4. If failed: show the error and ask the developer:
    - **"Fix it"** → Read the error, attempt a fix, retry the action
-   - **"Skip this step"** → Update task description with "[SKIPPED]", set to `completed`, continue
-   - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, mark all remaining tasks as `deleted`, stop execution
+   - **"Skip this step"** → Mark done with "[SKIPPED]", continue
+   - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, skip all remaining steps, stop execution
 
 ### 4e. Build **verification**
 
 After all file changes are complete:
 
-1. Set the build verification task to `in_progress`
+1. Begin build verification
 2. Detect the build command:
    - Next.js + Cloudflare: `<pkg> run build:cf` (or the build:cf script added in migration)
    - Next.js + VPS: `<pkg> run build`
@@ -307,20 +308,20 @@ After all file changes are complete:
    - Nuxt: `<pkg> run build` (runs `nuxt build`)
    - Static with build script: `<pkg> run build`
    - Static without build: skip (no build needed)
-3. Run the build command via `Bash`
-4. If build passes: mark task `completed`
+3. Run the build command
+4. If build passes: mark step as done
 5. If build fails:
    - Show the error output (first 50 lines)
-   - Ask the developer using `AskUserQuestion`:
+   - Ask the developer:
      - **"Fix it"** → Read the error, attempt to fix the code, re-run the build
-     - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, stop
-     - **"Continue anyway"** → Mark task `completed` with note "[BUILD FAILED - manual fix needed]"
+     - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, skip remaining steps, stop
+     - **"Continue anyway"** → Note "[BUILD FAILED - manual fix needed]" and continue
 
 ### 4f. Local dev server verification
 
 After build passes, verify the app starts and responds locally.
 
-1. Set the local dev server task to `in_progress`
+1. Begin local dev server verification
 2. Detect the preview command:
    - Next.js + Cloudflare: `npx wrangler dev` (port 8787)
    - Next.js + VPS: `node .next/standalone/server.js` (port 3000)
@@ -334,17 +335,17 @@ After build passes, verify the app starts and responds locally.
    - Nuxt + VPS: `node .output/server/index.mjs` (port 3000)
    - Static + Cloudflare: `npx wrangler pages dev <output-dir>` (port 8788)
    - Static + VPS: `npx serve <output-dir>` (port 3000)
-3. Start the preview command in the background via Bash (run_in_background)
+3. Start the preview command in the background
 4. Wait ~5 seconds for the server to start
 5. Run `curl -s -o /dev/null -w "%{http_code}" http://localhost:<port>/` to check for a 200 response
 6. Kill the background process
-7. If curl returns 200: mark task `completed`
+7. If curl returns 200: mark step as done
 8. If curl fails or non-200:
    - Show the output
-   - Ask the developer using `AskUserQuestion`:
+   - Ask the developer:
      - **"Fix it"** → investigate, fix, retry
-     - **"Skip"** → mark completed with "[DEV SERVER CHECK SKIPPED]"
-     - **"Rollback everything"** → `git reset --hard <checkpoint-sha>`, stop
+     - **"Skip"** → mark done with "[DEV SERVER CHECK SKIPPED]"
+     - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, skip remaining steps, stop
 
 ## Phase 5: DONE
 
@@ -388,6 +389,6 @@ Only include "STILL NEEDS YOUR ATTENTION" if there are remaining items. Derive t
 - **Handle errors**: If a knowledge file is missing, work from your own knowledge but warn the user. If a scan finds nothing, say so explicitly rather than guessing.
 - **One framework only**: If multiple frameworks are detected, ask the user to clarify which one is the primary framework.
 - **Monorepo awareness**: If the project root contains `apps/` or `packages/` directories, ask the user which app to migrate.
-- **Always use TaskCreate/TaskUpdate** to track execution progress during Phase 4.
-- **Task #1 must always be the git safety checkpoint.**
-- **Never mark a task as completed if the action failed.** Failed tasks stay `in_progress` with recovery options presented to the developer. Note: user-initiated skips (where the developer explicitly chooses "Skip this step") are NOT failures — mark these `completed` with a "[SKIPPED]" tag.
+- **Track progress** through each step during Phase 4. Use your agent's task tracking if available.
+- **Step #1 must always be the git safety checkpoint.**
+- **Never mark a step as done if the action failed.** Failed steps need recovery options presented to the developer. Note: user-initiated skips (where the developer explicitly chooses "Skip this step") are NOT failures — mark these done with a "[SKIPPED]" tag.
