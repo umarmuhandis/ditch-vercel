@@ -2,48 +2,34 @@
 
 **AI-powered migration away from Vercel. One command. Zero config.**
 
-An [agent skill](https://www.npmjs.com/package/skills) that analyzes your Vercel project, builds a migration plan, and executes it after your approval. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and other AI coding agents.
+Analyzes your Vercel project, builds a migration plan, and executes it after your approval. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and other AI coding agents.
 
 ## Installation
 
-```bash
-npx skills add umarmuhandis/ditch-vercel
-```
-
-The interactive installer will prompt you to:
-
-1. **Select agents** — Choose which AI coding agents to install to (Claude Code, Cursor, Copilot, Codex, Windsurf, etc.)
-2. **Choose scope** — Project-level (shared with your team via git) or global (available in all your projects)
-3. **Confirm** — Review what will be installed and where
-
-### Agent-specific install
-
-```bash
-# Single agent
-npx skills add umarmuhandis/ditch-vercel -a claude-code
-npx skills add umarmuhandis/ditch-vercel -a cursor
-npx skills add umarmuhandis/ditch-vercel -a copilot
-npx skills add umarmuhandis/ditch-vercel -a codex
-npx skills add umarmuhandis/ditch-vercel -a windsurf
-
-# Multiple agents at once
-npx skills add umarmuhandis/ditch-vercel -a claude-code -a cursor -a copilot
-```
-
-### Scope
-
-```bash
-# Project-level (default) — committed to git, shared with team
-npx skills add umarmuhandis/ditch-vercel
-
-# Global — installed to your home directory, available everywhere
-npx skills add umarmuhandis/ditch-vercel -g
-```
-
-### Claude Code plugin (alternative)
+### Claude Code plugin (recommended)
 
 ```bash
 claude plugin add github:umarmuhandis/ditch-vercel
+```
+
+### Bash installer (universal, zero dependencies)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/umarmuhandis/ditch-vercel/main/install.sh | bash
+```
+
+Automatically detects installed agents, downloads skill files, and sets up adapters. Supports `--dry-run` and `--uninstall`.
+
+### Manual
+
+Copy the `skills/ditch-vercel/` directory and `AGENTS.md` into your project root. For agent-specific adapters, also copy the relevant file from `adapters/`.
+
+### npx skills (legacy)
+
+> **Note:** The `skills` npm package is maintained by Vercel Labs. If you'd rather avoid that dependency, use any of the methods above.
+
+```bash
+npx skills add umarmuhandis/ditch-vercel
 ```
 
 ## Usage
@@ -91,18 +77,18 @@ The skill handles the rest — framework detection, compatibility analysis, migr
 ## Project Structure
 
 ```
+AGENTS.md                     # Universal agent discovery (Linux Foundation standard)
+install.sh                    # Zero-dependency bash installer
+adapters/
+  cursor.mdc                  # Cursor adapter
+  windsurf.md                 # Windsurf adapter
+  clinerules.md               # Cline/Roo adapter
 skills/ditch-vercel/
-  SKILL.md              # Main orchestrator — the 5-phase migration flow
-  frameworks/           # Framework-specific migration knowledge
-    nextjs.md
-    astro.md
-    remix.md
-    sveltekit.md
-    nuxt.md
-    static.md
-  targets/              # Target platform knowledge
-    cloudflare.md
-    vps.md
+  SKILL.md                    # Main orchestrator — the 5-phase migration flow
+  frameworks/                 # Framework-specific migration knowledge
+    nextjs.md, astro.md, remix.md, sveltekit.md, nuxt.md, static.md
+  targets/                    # Target platform knowledge
+    cloudflare.md, vps.md
 ```
 
 ## Contributing

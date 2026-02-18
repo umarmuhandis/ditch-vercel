@@ -4,26 +4,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-An agent skill (`npx skills add umarmuhandis/ditch-vercel`) that automates migrating web apps from Vercel to other platforms. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and other AI coding agents via the [skills](https://www.npmjs.com/package/skills) CLI. Also installable as a Claude Code plugin (`claude plugin add github:umarmuhandis/ditch-vercel`). No build system, no tests, no compiled code — the entire skill is markdown-based knowledge files that agents follow as instructions.
+An agent skill that automates migrating web apps from Vercel to other platforms. Installable as a Claude Code plugin (`claude plugin add github:umarmuhandis/ditch-vercel`), via bash installer, or through `AGENTS.md` discovery. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and other AI coding agents. No build system, no tests, no compiled code — the entire skill is markdown-based knowledge files that agents follow as instructions.
 
 ## Architecture
 
 ```
-.claude-plugin/plugin.json    → Plugin metadata (name, version, description)
+AGENTS.md                       → Universal agent discovery (Linux Foundation standard)
+install.sh                      → Zero-dependency bash installer (agent detection + downloads)
+adapters/
+  cursor.mdc                    → Cursor adapter (thin pointer to SKILL.md)
+  windsurf.md                   → Windsurf adapter
+  clinerules.md                 → Cline/Roo adapter
+.claude-plugin/plugin.json      → Plugin metadata (name, version, description)
 .claude-plugin/marketplace.json → Claude Code plugin marketplace metadata
 skills/ditch-vercel/
-  SKILL.md                    → Orchestrator: 5-phase flow (scan → report → plan+approve → execute → done)
-  frameworks/<name>.md        → Per-framework migration knowledge (6 files)
-  targets/<name>.md           → Per-target-platform knowledge (cloudflare.md, vps.md)
+  SKILL.md                      → Orchestrator: 5-phase flow (scan → report → plan+approve → execute → done)
+  frameworks/<name>.md          → Per-framework migration knowledge (6 files)
+  targets/<name>.md             → Per-target-platform knowledge (cloudflare.md, vps.md)
 ```
 
-The `skills/ditch-vercel/` directory is the standard discovery path for the `npx skills add` CLI. The SKILL.md frontmatter (`name` + `description`) makes the skill discoverable by all supported agents.
+**Distribution channels** (Vercel-independent):
+1. **Claude Code plugin** — `claude plugin add github:umarmuhandis/ditch-vercel`
+2. **AGENTS.md** — universal agent discovery, supported by 20+ agents
+3. **Bash installer** — `curl -fsSL .../install.sh | bash`, zero dependencies
+4. **npx skills** (legacy) — Vercel Labs dependency, kept for backwards compat
 
-**SKILL.md** is the entry point. It defines a 5-phase flow: scan (detect framework + Vercel features + target) → report (complexity scoring with GREEN/YELLOW/RED traffic light) → plan+approve (hard gate) → execute (with git safety checkpoint, task-driven progress via TaskCreate/TaskUpdate, and auto build verification) → done (summary + undo instructions). Framework and target files are referenced from SKILL.md and read during execution.
+**SKILL.md** is the canonical entry point. It defines a 5-phase flow: scan (detect framework + Vercel features + target) → report (complexity scoring with GREEN/YELLOW/RED traffic light) → plan+approve (hard gate) → execute (with git safety checkpoint, task-driven progress via TaskCreate/TaskUpdate, and auto build verification) → done (summary + undo instructions). Framework and target files are referenced from SKILL.md and read during execution.
 
 **Framework files** (`nextjs.md`, `astro.md`, `remix.md`, `sveltekit.md`, `nuxt.md`, `static.md`) each contain: detection criteria, step-by-step migration instructions, and a compatibility matrix with Weight/Category/Status ratings for complexity scoring.
 
 **Target files** (`cloudflare.md`, `vps.md`) contain: scoring legend, Vercel-to-platform feature mapping with Weight/Category columns, known limitations, config templates (`wrangler.toml`), and CLI commands.
+
+**Adapter files** are thin pointers that tell each agent to read `skills/ditch-vercel/SKILL.md`. The installer copies them to agent-specific config directories.
 
 The separation is intentional — adding a new framework means creating one file in `frameworks/` and adding a row to SKILL.md Phase 1. Adding a new target means creating one file in `targets/` and updating Phase 1.
 
