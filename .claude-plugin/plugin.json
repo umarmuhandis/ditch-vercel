@@ -8,5 +8,5 @@
   },
   "repository": "https://github.com/umarmuhandis/ditch-vercel",
   "license": "MIT",
-  "keywords": ["vercel", "cloudflare", "migration", "deploy"]
+  "keywords": ["vercel", "cloudflare", "vps", "migration", "deploy"]
 }

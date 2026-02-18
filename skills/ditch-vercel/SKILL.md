@@ -65,16 +65,18 @@ Scan for every Vercel-specific feature. Check every item — do NOT skip any.
 
 ### 1c. Select target platform
 
-Use `AskUserQuestion` to ask the target platform. For v1, Cloudflare is the only option:
+Use `AskUserQuestion` to ask the target platform:
 
 ```
 Where do you want to migrate?
-- Cloudflare (Recommended)
-- Other targets coming soon (Railway, Fly.io, VPS)
+- Cloudflare (Workers/Pages — serverless edge) (Recommended)
+- VPS (Node.js + PM2 + Nginx — self-managed server)
+- Other targets coming soon (Railway, Fly.io)
 ```
 
 Read the target knowledge file:
 - Cloudflare: [targets/cloudflare.md](targets/cloudflare.md)
+- VPS: [targets/vps.md](targets/vps.md)
 
 ### 1d. Output (one line only)
 
@@ -276,6 +278,8 @@ Before executing file changes, verify migration steps against current official d
 
 For each remaining task (dependencies, files, deletions):
 
+**Important:** Follow the migration steps section in the framework knowledge file that matches the selected target platform. For example, if the target is VPS, follow `## Migration Steps (VPS)`. If the target is Cloudflare, follow `## Migration Steps (Cloudflare)`. Use the corresponding `## Compatibility Notes ([target])` section for replacement guidance.
+
 1. Set task status to `in_progress` using `TaskUpdate`
 2. Execute the action:
    - **Install dep**: `[pkg-manager] add <pkg>` / `[pkg-manager] add -D <pkg>`
@@ -296,10 +300,11 @@ After all file changes are complete:
 1. Set the build verification task to `in_progress`
 2. Detect the build command:
    - Next.js + Cloudflare: `npm run build:cf` (or the build:cf script added in migration)
-   - Astro: `astro build`
-   - Remix: `remix vite:build`
+   - Next.js + VPS: `npm run build`
+   - Astro: `npm run build` (runs `astro build`)
+   - Remix: `npm run build` (runs `remix vite:build`)
    - SvelteKit: `npm run build`
-   - Nuxt: `nuxt build`
+   - Nuxt: `npm run build` (runs `nuxt build`)
    - Static with build script: `npm run build`
    - Static without build: skip (no build needed)
 3. Run the build command via `Bash`
@@ -318,11 +323,17 @@ After build passes, verify the app starts and responds locally.
 1. Set the local dev server task to `in_progress`
 2. Detect the preview command:
    - Next.js + Cloudflare: `npx wrangler dev` (port 8787)
+   - Next.js + VPS: `node .next/standalone/server.js` (port 3000)
    - Astro + Cloudflare: `npx wrangler pages dev dist/` (port 8788)
+   - Astro + VPS: `node dist/server/entry.mjs` (port 4321)
    - Remix + Cloudflare: `npx wrangler pages dev build/client` (port 8788)
+   - Remix + VPS: `npx remix-serve build/server/index.js` (port 3000)
    - SvelteKit + Cloudflare: `npx wrangler pages dev .svelte-kit/cloudflare` (port 8788)
+   - SvelteKit + VPS: `node build/index.js` (port 3000)
    - Nuxt + Cloudflare: `npx wrangler pages dev dist/` (port 8788)
-   - Static: `npx wrangler pages dev <output-dir>` (port 8788)
+   - Nuxt + VPS: `node .output/server/index.mjs` (port 3000)
+   - Static + Cloudflare: `npx wrangler pages dev <output-dir>` (port 8788)
+   - Static + VPS: `npx serve <output-dir>` (port 3000)
 3. Start the preview command in the background via Bash (run_in_background)
 4. Wait ~5 seconds for the server to start
 5. Run `curl -s -o /dev/null -w "%{http_code}" http://localhost:<port>/` to check for a 200 response

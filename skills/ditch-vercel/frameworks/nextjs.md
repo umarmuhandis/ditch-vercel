@@ -1,4 +1,4 @@
-# Next.js — Vercel to Cloudflare Migration
+# Next.js — Vercel Migration
 
 ## Detection
 
@@ -13,7 +13,7 @@
 
 ---
 
-## Migration Steps
+## Migration Steps (Cloudflare)
 
 ### 1. Install OpenNext for Cloudflare
 
@@ -100,7 +100,135 @@ Remove `vercel.json` from the project root after migrating its contents.
 
 ---
 
-## Compatibility Notes
+---
+
+## Migration Steps (VPS)
+
+### 1. Configure standalone output
+
+Update `next.config.js` (or `.mjs`/`.ts`) to enable standalone output mode:
+
+```js
+module.exports = {
+  output: 'standalone',
+};
+```
+
+This produces a self-contained `.next/standalone/` directory with all dependencies bundled. The server runs on plain Node.js with no adapter needed.
+
+### 2. Remove `@vercel/*` packages
+
+Uninstall all `@vercel/*` packages found in `package.json`:
+
+```bash
+npm uninstall @vercel/analytics @vercel/speed-insights @vercel/og @vercel/blob @vercel/kv @vercel/postgres @vercel/edge
+```
+
+Remove their imports and usage from source files (see Compatibility Notes (VPS) for replacements).
+
+### 3. Migrate `vercel.json` rewrites/redirects
+
+If `vercel.json` contains `rewrites`, `redirects`, or `headers`, move them to `next.config.js` using Next.js native support:
+
+```js
+// next.config.js
+module.exports = {
+  output: 'standalone',
+  async redirects() {
+    return [
+      { source: '/old-path', destination: '/new-path', permanent: true },
+    ];
+  },
+  async rewrites() {
+    return [
+      { source: '/api/:path*', destination: 'https://backend.example.com/:path*' },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Frame-Options', value: 'DENY' },
+        ],
+      },
+    ];
+  },
+};
+```
+
+### 4. Update `package.json` scripts
+
+```json
+{
+  "scripts": {
+    "start": "node .next/standalone/server.js"
+  }
+}
+```
+
+Keep the existing `dev`, `build`, and `lint` scripts unchanged.
+
+### 5. Create PM2 ecosystem config
+
+Create `ecosystem.config.js` in the project root:
+
+```js
+module.exports = {
+  apps: [{
+    name: '<project-name-from-package.json>',
+    script: '.next/standalone/server.js',
+    instances: 'max',
+    exec_mode: 'cluster',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 3000,
+    },
+  }],
+};
+```
+
+### 6. Handle static assets
+
+Next.js standalone output does NOT include `public/` and `.next/static/`. These must be served separately.
+
+**Option A (recommended): Serve via Nginx**
+
+Add to the Nginx server block:
+
+```nginx
+location /_next/static/ {
+    alias /var/www/<project-name>/.next/static/;
+    expires 1y;
+    access_log off;
+}
+
+location /public/ {
+    alias /var/www/<project-name>/public/;
+    expires 1y;
+    access_log off;
+}
+```
+
+**Option B: Copy into standalone directory**
+
+Add a `postbuild` script to `package.json`:
+
+```json
+{
+  "scripts": {
+    "postbuild": "cp -r public .next/standalone/public && cp -r .next/static .next/standalone/.next/static"
+  }
+}
+```
+
+### 7. Delete `vercel.json`
+
+Remove `vercel.json` from the project root after migrating its contents.
+
+---
+
+## Compatibility Notes (Cloudflare)
 
 ### Supported (works with OpenNext on Cloudflare)
 
@@ -131,6 +259,39 @@ Remove `vercel.json` from the project root after migrating its contents.
 | `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Replace `put()`, `del()`, `list()`, `head()` calls with R2 binding methods (`put()`, `delete()`, `list()`, `head()`). R2 bindings are accessed via `process.env` or platform context. |
 | `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Replace `kv.get()`, `kv.set()` with KV namespace binding methods. Add KV namespace to `wrangler.toml`. |
 | `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | Different API entirely. D1 uses SQLite syntax. Hyperdrive can proxy to existing Postgres. If the project uses Prisma or Drizzle, update the adapter config. |
+
+---
+
+## Compatibility Notes (VPS)
+
+### Supported
+
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| App Router | 0 | Automated | Supported | Fully supported with `output: 'standalone'` |
+| Pages Router | 0 | Automated | Supported | Fully supported with `output: 'standalone'` |
+| API Routes | 0 | Automated | Supported | Run as part of the Node.js server process |
+| Server Actions | 0 | Automated | Supported | Handled by the Node.js server |
+| ISR | 0 | Automated | Supported | Works natively with file-system cache in standalone mode. Single-server only (no distributed cache). |
+| `@vercel/og` | 0 | Automated | Supported | Works as-is in Node.js environments. Uses `satori` + `@resvg/resvg-js` under the hood. No changes needed. |
+
+### Partial
+
+| Feature | Weight | Category | Status | Action |
+|---------|--------|----------|--------|--------|
+| Edge Middleware | 1 | Attention | Partial | Middleware runs in Node.js (not edge). Functionally equivalent but no geo-distributed execution. Remove any edge-only APIs if used. |
+| Edge Runtime routes | 1 | Attention | Partial | Edge runtime not available on VPS. Remove `export const runtime = 'edge'` declarations — routes will run in the Node.js runtime instead. |
+| `next/image` | 1 | Attention | Partial | Install `sharp` for local image optimization: `npm install sharp`. Works out of the box with standalone output. No CDN optimization — consider adding Cloudflare CDN in front. |
+
+### Manual
+
+| Feature | Weight | Category | Replacement | Action |
+|---------|--------|----------|-------------|--------|
+| `@vercel/analytics` | 1 | Attention | Plausible / Umami / PostHog | Remove the package and `<Analytics />` component. Self-host Plausible or Umami, or use any analytics provider. |
+| `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package and `<SpeedInsights />` component. Use Lighthouse CI for performance monitoring. |
+| `@vercel/blob` | 1 | Attention | Local filesystem or S3 SDK | Replace with `fs` for local storage or `@aws-sdk/client-s3` for S3-compatible storage (AWS S3, MinIO, Backblaze B2). |
+| `@vercel/kv` | 1 | Attention | Redis (`ioredis`) | Install Redis on the VPS. Replace `@vercel/kv` with `ioredis`. API mapping: `kv.get()` → `redis.get()`, `kv.set()` → `redis.set()`. |
+| `@vercel/postgres` | 1 | Attention | PostgreSQL (`pg`) | Install PostgreSQL on the VPS or use managed Postgres. Replace `@vercel/postgres` with `pg`. Direct connection — no serverless proxy needed. If using Prisma or Drizzle, just update the connection string. |
 
 ## Reference URLs
 - https://opennext.js.org/cloudflare

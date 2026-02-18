@@ -1,4 +1,4 @@
-# Remix — Vercel to Cloudflare Migration
+# Remix — Vercel Migration
 
 ## Detection
 
@@ -14,7 +14,7 @@
 
 ---
 
-## Migration Steps
+## Migration Steps (Cloudflare)
 
 ### 1. Uninstall Vercel packages
 
@@ -154,7 +154,91 @@ Remove `vercel.json` from the project root.
 
 ---
 
-## Compatibility Notes
+---
+
+## Migration Steps (VPS)
+
+### 1. Uninstall Vercel packages
+
+```bash
+npm uninstall @remix-run/vercel @vercel/remix
+```
+
+### 2. Install Node.js packages
+
+Install the Node.js runtime adapter and server (if not already present):
+
+```bash
+npm install @remix-run/node @remix-run/serve
+```
+
+### 3. Update `entry.server.tsx`
+
+Replace Cloudflare/Vercel types with Node.js types:
+
+**Before:**
+```ts
+import type { EntryContext } from '@remix-run/vercel';
+// or: import type { EntryContext } from '@vercel/remix';
+```
+
+**After:**
+```ts
+import type { EntryContext } from '@remix-run/node';
+```
+
+### 4. Update loader/action imports
+
+Grep for all imports from `@remix-run/vercel`, `@vercel/remix`, or `@remix-run/cloudflare` and replace with `@remix-run/node`:
+
+**Before:**
+```ts
+import type { LoaderFunctionArgs } from '@remix-run/vercel';
+// or: import type { LoaderFunctionArgs } from '@vercel/remix';
+```
+
+**After:**
+```ts
+import type { LoaderFunctionArgs } from '@remix-run/node';
+```
+
+### 5. Update `package.json` scripts
+
+```json
+{
+  "scripts": {
+    "start": "remix-serve build/server/index.js"
+  }
+}
+```
+
+Keep the existing `dev` and `build` scripts unchanged.
+
+### 6. Create PM2 ecosystem config and clean up
+
+Create `ecosystem.config.js` in the project root:
+
+```js
+module.exports = {
+  apps: [{
+    name: '<project-name-from-package.json>',
+    script: 'node_modules/.bin/remix-serve',
+    args: 'build/server/index.js',
+    instances: 'max',
+    exec_mode: 'cluster',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 3000,
+    },
+  }],
+};
+```
+
+Delete `vercel.json` from the project root.
+
+---
+
+## Compatibility Notes (Cloudflare)
 
 ### Supported
 
@@ -184,6 +268,33 @@ Remove `vercel.json` from the project root.
 | `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Access R2 via `context.cloudflare.env.BUCKET_NAME` in loaders/actions. |
 | `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `context.cloudflare.env.KV_NAMESPACE` in loaders/actions. |
 | `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Hyperdrive proxies existing Postgres. Access via `context.cloudflare.env`. |
+
+---
+
+## Compatibility Notes (VPS)
+
+### Supported
+
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| Loaders / Actions | 0 | Automated | Supported | Run as part of the Node.js server process. |
+| Route modules | 0 | Automated | Supported | File-based routing works identically. |
+| Nested routes | 0 | Automated | Supported | Works unchanged. |
+| Error boundaries | 0 | Automated | Supported | Works unchanged. |
+| Streaming | 0 | Automated | Supported | `renderToReadableStream` works natively in Node.js. |
+| `fetch` API | 0 | Automated | Supported | Native in Node.js 18+. |
+| Session storage | 0 | Automated | Supported | `createCookieSessionStorage` from `@remix-run/node` works natively. File-system session storage also available. |
+| Node.js APIs | 0 | Automated | Supported | Full Node.js API access — no restrictions. `fs`, `path`, `crypto`, native addons all work. |
+
+### Manual
+
+| Feature | Weight | Category | Replacement | Action |
+|---------|--------|----------|-------------|--------|
+| `@vercel/analytics` | 1 | Attention | Plausible / Umami | Remove the package. Add analytics provider snippet to root template. |
+| `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package and component. |
+| `@vercel/blob` | 1 | Attention | Local filesystem or S3 SDK | Replace with `fs` for local storage or `@aws-sdk/client-s3` for S3-compatible storage. |
+| `@vercel/kv` | 1 | Attention | Redis (`ioredis`) | Install Redis. Replace `@vercel/kv` with `ioredis`. |
+| `@vercel/postgres` | 1 | Attention | PostgreSQL (`pg`) | Install PostgreSQL. Replace `@vercel/postgres` with `pg`. Direct connection — no serverless proxy needed. If using Prisma or Drizzle, just update the connection string. |
 
 ## Reference URLs
 - https://remix.run/docs/en/main/guides/templates
