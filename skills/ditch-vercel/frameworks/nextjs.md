@@ -131,3 +131,8 @@ Remove `vercel.json` from the project root after migrating its contents.
 | `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Replace `put()`, `del()`, `list()`, `head()` calls with R2 binding methods (`put()`, `delete()`, `list()`, `head()`). R2 bindings are accessed via `process.env` or platform context. |
 | `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Replace `kv.get()`, `kv.set()` with KV namespace binding methods. Add KV namespace to `wrangler.toml`. |
 | `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | Different API entirely. D1 uses SQLite syntax. Hyperdrive can proxy to existing Postgres. If the project uses Prisma or Drizzle, update the adapter config. |
+
+## Reference URLs
+- https://opennext.js.org/cloudflare
+- https://developers.cloudflare.com/pages/framework-guide/nextjs/
+- llms.txt: https://nextjs.org/docs/llms.txt

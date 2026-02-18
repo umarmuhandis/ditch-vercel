@@ -118,3 +118,8 @@ crons = ["0 * * * *", "*/15 * * * *"]
 | Create KV namespace | `npx wrangler kv namespace create <NAME>` |
 | Create R2 bucket | `npx wrangler r2 bucket create <NAME>` |
 | Create D1 database | `npx wrangler d1 create <NAME>` |
+
+## Reference URLs
+- https://developers.cloudflare.com/pages/migrations/migrating-from-vercel/
+- https://developers.cloudflare.com/workers/frameworks/
+- llms.txt: https://developers.cloudflare.com/llms.txt

@@ -121,3 +121,8 @@ Remove `vercel.json` from the project root.
 | `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package and component. |
 | `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Access R2 via `Astro.locals.runtime.env.BUCKET_NAME`. |
 | `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `Astro.locals.runtime.env.KV_NAMESPACE`. Add binding to `wrangler.toml`. |
+
+## Reference URLs
+- https://docs.astro.build/en/guides/deploy/cloudflare/
+- https://developers.cloudflare.com/pages/framework-guide/deploy-an-astro-site/
+- llms.txt: https://docs.astro.build/llms.txt

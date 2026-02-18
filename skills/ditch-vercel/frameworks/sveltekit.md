@@ -151,3 +151,8 @@ Remove `vercel.json` from the project root.
 | `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `platform.env.KV_NAMESPACE`. Add KV binding to `wrangler.toml`. |
 | `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Hyperdrive proxies existing Postgres. Access via `platform.env`. |
 | Edge config (`@vercel/edge-config`) | 1 | Attention | Cloudflare KV | Replace with KV namespace for key-value configuration data. |
+
+## Reference URLs
+- https://svelte.dev/docs/kit/adapter-cloudflare
+- https://developers.cloudflare.com/pages/framework-guide/deploy-a-svelte-kit-site/
+- llms.txt: https://svelte.dev/llms.txt

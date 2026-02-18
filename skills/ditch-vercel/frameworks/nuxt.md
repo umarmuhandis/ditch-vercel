@@ -124,3 +124,9 @@ Remove `vercel.json` from the project root.
 | `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Access R2 via `hubBlob()` (NuxtHub) or Nitro's `useStorage()` with Cloudflare driver. |
 | `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `hubKV()` (NuxtHub) or Nitro's `useStorage()` with Cloudflare KV driver. |
 | `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Access via `hubDatabase()` (NuxtHub) or Nitro's `useDatabase()`. Hyperdrive can proxy existing Postgres. |
+
+## Reference URLs
+- https://nitro.build/deploy/providers/cloudflare
+- https://developers.cloudflare.com/pages/framework-guide/deploy-a-nuxt-site/
+- llms.txt: https://nuxt.com/llms.txt
+- llms.txt: https://nitro.build/llms.txt

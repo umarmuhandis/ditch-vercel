@@ -184,3 +184,7 @@ Remove `vercel.json` from the project root.
 | `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Access R2 via `context.cloudflare.env.BUCKET_NAME` in loaders/actions. |
 | `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `context.cloudflare.env.KV_NAMESPACE` in loaders/actions. |
 | `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Hyperdrive proxies existing Postgres. Access via `context.cloudflare.env`. |
+
+## Reference URLs
+- https://remix.run/docs/en/main/guides/templates
+- https://developers.cloudflare.com/pages/framework-guide/deploy-a-remix-site/

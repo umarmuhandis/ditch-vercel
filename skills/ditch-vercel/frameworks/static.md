@@ -180,3 +180,6 @@ Static sites do not use server-side features, so the following Vercel features a
 - ISR
 - SSR
 - API routes (unless adding Cloudflare Workers separately)
+
+## Reference URLs
+- https://developers.cloudflare.com/pages/get-started/git-integration/
