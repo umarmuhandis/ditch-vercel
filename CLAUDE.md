@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-An agent skill (`npx skills add umarmuhandis/ditch-vercel`) that automates migrating web apps from Vercel to other platforms. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and 35+ other AI coding agents via the [skills](https://www.npmjs.com/package/skills) CLI. Also installable as a Claude Code plugin (`claude plugin add github:umarmuhandis/ditch-vercel`). No build system, no tests, no compiled code — the entire skill is markdown-based knowledge files that agents follow as instructions.
+An agent skill (`npx skills add umarmuhandis/ditch-vercel`) that automates migrating web apps from Vercel to other platforms. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and other AI coding agents via the [skills](https://www.npmjs.com/package/skills) CLI. Also installable as a Claude Code plugin (`claude plugin add github:umarmuhandis/ditch-vercel`). No build system, no tests, no compiled code — the entire skill is markdown-based knowledge files that agents follow as instructions.
 
 ## Architecture
 
@@ -23,7 +23,7 @@ The `skills/ditch-vercel/` directory is the standard discovery path for the `npx
 
 **Framework files** (`nextjs.md`, `astro.md`, `remix.md`, `sveltekit.md`, `nuxt.md`, `static.md`) each contain: detection criteria, step-by-step migration instructions, and a compatibility matrix with Weight/Category/Status ratings for complexity scoring.
 
-**Target files** (`cloudflare.md`) contain: scoring legend, Vercel-to-platform feature mapping with Weight/Category columns, known limitations, config templates (`wrangler.toml`), and CLI commands.
+**Target files** (`cloudflare.md`, `vps.md`) contain: scoring legend, Vercel-to-platform feature mapping with Weight/Category columns, known limitations, config templates (`wrangler.toml`), and CLI commands.
 
 The separation is intentional — adding a new framework means creating one file in `frameworks/` and adding a row to SKILL.md Phase 1. Adding a new target means creating one file in `targets/` and updating Phase 1.
 

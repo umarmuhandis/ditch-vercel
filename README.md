@@ -2,7 +2,7 @@
 
 **AI-powered migration away from Vercel. One command. Zero config.**
 
-An [agent skill](https://www.npmjs.com/package/skills) that analyzes your Vercel project, builds a migration plan, and executes it after your approval. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and 35+ other AI coding agents.
+An [agent skill](https://www.npmjs.com/package/skills) that analyzes your Vercel project, builds a migration plan, and executes it after your approval. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and other AI coding agents.
 
 ## Installation
 
@@ -87,9 +87,9 @@ The skill handles the rest — framework detection, compatibility analysis, migr
 | Target | Status |
 |--------|--------|
 | **Cloudflare** (Workers + Pages) | Available |
+| **VPS** (Node.js + PM2 + Nginx) | Available |
 | Railway | Planned |
 | Fly.io | Planned |
-| VPS / Docker | Planned |
 
 ## Project Structure
 
@@ -118,7 +118,7 @@ Create `skills/ditch-vercel/frameworks/<framework>.md` with:
 - Step-by-step migration instructions
 - Compatibility notes (Supported / Partial / Manual)
 
-Then add the framework to the detection table in `SKILL.md` Step 1.
+Then add the framework to the detection table in `SKILL.md` Phase 1.
 
 ### Add a new target platform
 
@@ -130,7 +130,7 @@ Create `skills/ditch-vercel/targets/<target>.md` with:
 - Config templates
 - Essential CLI commands
 
-Then add the target to `SKILL.md` Step 3.
+Then add the target to `SKILL.md` Phase 1.
 
 ## License
 
