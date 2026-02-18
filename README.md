@@ -2,9 +2,45 @@
 
 **AI-powered migration away from Vercel. One command. Zero config.**
 
-A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin that analyzes your Vercel project, builds a migration plan, and executes it after your approval.
+An [agent skill](https://www.npmjs.com/package/skills) that analyzes your Vercel project, builds a migration plan, and executes it after your approval. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and 35+ other AI coding agents.
 
 ## Installation
+
+```bash
+npx skills add umarmuhandis/ditch-vercel
+```
+
+The interactive installer will prompt you to:
+
+1. **Select agents** — Choose which AI coding agents to install to (Claude Code, Cursor, Copilot, Codex, Windsurf, etc.)
+2. **Choose scope** — Project-level (shared with your team via git) or global (available in all your projects)
+3. **Confirm** — Review what will be installed and where
+
+### Agent-specific install
+
+```bash
+# Single agent
+npx skills add umarmuhandis/ditch-vercel -a claude-code
+npx skills add umarmuhandis/ditch-vercel -a cursor
+npx skills add umarmuhandis/ditch-vercel -a copilot
+npx skills add umarmuhandis/ditch-vercel -a codex
+npx skills add umarmuhandis/ditch-vercel -a windsurf
+
+# Multiple agents at once
+npx skills add umarmuhandis/ditch-vercel -a claude-code -a cursor -a copilot
+```
+
+### Scope
+
+```bash
+# Project-level (default) — committed to git, shared with team
+npx skills add umarmuhandis/ditch-vercel
+
+# Global — installed to your home directory, available everywhere
+npx skills add umarmuhandis/ditch-vercel -g
+```
+
+### Claude Code plugin (alternative)
 
 ```bash
 claude plugin add github:umarmuhandis/ditch-vercel
@@ -12,13 +48,17 @@ claude plugin add github:umarmuhandis/ditch-vercel
 
 ## Usage
 
-```bash
-cd your-vercel-project
-claude
-> /ditch-vercel
-```
+After installing, open your AI coding agent in a Vercel project:
 
-That's it. The plugin handles the rest.
+| Agent | How to invoke |
+|-------|--------------|
+| **Claude Code** | `/ditch-vercel` |
+| **Cursor** | Ask: *"migrate this project from Vercel"* |
+| **GitHub Copilot** | Ask: *"use the ditch-vercel skill to migrate"* |
+| **Codex** | Ask: *"run the ditch-vercel migration"* |
+| **Windsurf** | Ask: *"migrate from Vercel using ditch-vercel"* |
+
+The skill handles the rest — framework detection, compatibility analysis, migration planning, approval gate, and execution.
 
 ## How It Works
 
@@ -55,7 +95,7 @@ That's it. The plugin handles the rest.
 
 ```
 skills/ditch-vercel/
-  SKILL.md              # Main orchestrator — the 8-step migration flow
+  SKILL.md              # Main orchestrator — the 5-phase migration flow
   frameworks/           # Framework-specific migration knowledge
     nextjs.md
     astro.md
@@ -65,6 +105,7 @@ skills/ditch-vercel/
     static.md
   targets/              # Target platform knowledge
     cloudflare.md
+    vps.md
 ```
 
 ## Contributing
