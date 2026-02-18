@@ -9,7 +9,8 @@ Analyzes your Vercel project, builds a migration plan, and executes it after you
 ### Claude Code plugin (recommended)
 
 ```bash
-claude plugin add github:umarmuhandis/ditch-vercel
+claude plugin marketplace add umarmuhandis/ditch-vercel
+claude plugin install ditch-vercel
 ```
 
 ### Bash installer (universal, zero dependencies)

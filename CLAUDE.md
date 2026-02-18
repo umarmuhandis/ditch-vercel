@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-An agent skill that automates migrating web apps from Vercel to other platforms. Installable as a Claude Code plugin (`claude plugin add github:umarmuhandis/ditch-vercel`), via bash installer, or through `AGENTS.md` discovery. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and other AI coding agents. No build system, no tests, no compiled code — the entire skill is markdown-based knowledge files that agents follow as instructions.
+An agent skill that automates migrating web apps from Vercel to other platforms. Installable as a Claude Code plugin (`claude plugin marketplace add umarmuhandis/ditch-vercel && claude plugin install ditch-vercel`), via bash installer, or through `AGENTS.md` discovery. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and other AI coding agents. No build system, no tests, no compiled code — the entire skill is markdown-based knowledge files that agents follow as instructions.
 
 ## Architecture
 
@@ -24,7 +24,7 @@ skills/ditch-vercel/
 ```
 
 **Distribution channels** (Vercel-independent):
-1. **Claude Code plugin** — `claude plugin add github:umarmuhandis/ditch-vercel`
+1. **Claude Code plugin** — `claude plugin marketplace add umarmuhandis/ditch-vercel && claude plugin install ditch-vercel`
 2. **AGENTS.md** — universal agent discovery, supported by 20+ agents
 3. **Bash installer** — `curl -fsSL .../install.sh | bash`, zero dependencies
 4. **npx skills** (legacy) — Vercel Labs dependency, kept for backwards compat
