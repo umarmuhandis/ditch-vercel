@@ -10,7 +10,7 @@ An agent skill (`npx skills add umarmuhandis/ditch-vercel`) that automates migra
 
 ```
 .claude-plugin/plugin.json    → Plugin metadata (name, version, description)
-.claude-plugin/marketplace.json → Marketplace metadata + skill discovery (skills CLI reads this)
+.claude-plugin/marketplace.json → Claude Code plugin marketplace metadata
 skills/ditch-vercel/
   SKILL.md                    → Orchestrator: 5-phase flow (scan → report → plan+approve → execute → done)
   frameworks/<name>.md        → Per-framework migration knowledge (6 files)

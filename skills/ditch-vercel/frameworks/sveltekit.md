@@ -24,7 +24,17 @@ npm uninstall @sveltejs/adapter-vercel
 npm install -D @sveltejs/adapter-cloudflare
 ```
 
-### 3. Update `svelte.config.js`
+### 3. Remove common Vercel packages
+
+If the project uses any common Vercel packages, uninstall them:
+
+```bash
+npm uninstall @vercel/analytics @vercel/speed-insights @vercel/og
+```
+
+Only run for packages actually in `package.json`. Remove their imports and usage from source files (see Compatibility Notes for replacements).
+
+### 4. Update `svelte.config.js`
 
 Replace the Vercel adapter with the Cloudflare adapter:
 
@@ -50,7 +60,7 @@ export default {
 };
 ```
 
-### 4. Create `wrangler.toml`
+### 5. Create `wrangler.toml`
 
 Create `wrangler.toml` in the project root. Derive `name` from `package.json` `name`:
 
@@ -63,7 +73,7 @@ compatibility_flags = ["nodejs_compat"]
 directory = ".svelte-kit/cloudflare"
 ```
 
-### 5. Update `package.json` scripts
+### 6. Update `package.json` scripts
 
 ```json
 {
@@ -76,7 +86,7 @@ directory = ".svelte-kit/cloudflare"
 
 Keep the existing `dev`, `build`, and `check` scripts unchanged.
 
-### 6. Access Cloudflare platform bindings
+### 7. Access Cloudflare platform bindings
 
 In server-side code (`+page.server.ts`, `+server.ts`, hooks), access Cloudflare bindings via the `platform` object:
 
@@ -106,14 +116,22 @@ declare global {
 export {};
 ```
 
-### 7. Migrate `vercel.json` config
+### 8. Migrate `vercel.json` config
 
 If `vercel.json` has rewrites/redirects/headers:
 - **Redirects:** Create a `static/_redirects` file (format: `from to statusCode`)
 - **Headers:** Create a `static/_headers` file (format: `[path]\n  Header-Name: value`)
 - **Rewrites:** Create entries in `static/_redirects` with status `200`
 
-### 8. Delete `vercel.json`
+### 9. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- **Non-secret values:** Add to `wrangler.toml` under `[vars]`
+- **Secrets (API keys, tokens):** Use `wrangler secret put <NAME>`
+- **Dashboard alternative:** Cloudflare dashboard > Workers/Pages > Settings > Environment Variables
+
+### 10. Delete `vercel.json`
 
 Remove `vercel.json` from the project root.
 
@@ -135,7 +153,17 @@ npm uninstall @sveltejs/adapter-vercel
 npm install -D @sveltejs/adapter-node
 ```
 
-### 3. Update `svelte.config.js`
+### 3. Remove common Vercel packages
+
+If the project uses any common Vercel packages, uninstall them:
+
+```bash
+npm uninstall @vercel/analytics @vercel/speed-insights @vercel/og
+```
+
+Only run for packages actually in `package.json`. Remove their imports and usage from source files (see Compatibility Notes (VPS) for replacements).
+
+### 4. Update `svelte.config.js`
 
 Replace the Vercel adapter with the Node.js adapter:
 
@@ -161,7 +189,7 @@ export default {
 };
 ```
 
-### 4. Update `package.json` scripts
+### 5. Update `package.json` scripts
 
 ```json
 {
@@ -173,7 +201,7 @@ export default {
 
 Keep the existing `dev`, `build`, and `check` scripts unchanged.
 
-### 5. Create PM2 ecosystem config
+### 6. Create PM2 ecosystem config
 
 Create `ecosystem.config.js` in the project root:
 
@@ -192,9 +220,18 @@ module.exports = {
 };
 ```
 
-### 6. Migrate `vercel.json` and clean up
+### 7. Migrate `vercel.json` and clean up
 
 If `vercel.json` has rewrites/redirects/headers, move them to SvelteKit hooks (`hooks.server.ts`) or Nginx config.
+
+### 8. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- Create or update `.env` in the project root
+- For PM2: add to the `env` block in `ecosystem.config.js`
+
+### 9. Delete `vercel.json`
 
 Delete `vercel.json` from the project root.
 

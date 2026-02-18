@@ -94,7 +94,15 @@ module.exports = {
 };
 ```
 
-### 6. Delete `vercel.json`
+### 6. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- **Non-secret values:** Add to `wrangler.toml` under `[vars]`
+- **Secrets (API keys, tokens):** Use `wrangler secret put <NAME>`
+- **Dashboard alternative:** Cloudflare dashboard > Workers/Pages > Settings > Environment Variables
+
+### 7. Delete `vercel.json`
 
 Remove `vercel.json` from the project root after migrating its contents.
 
@@ -222,7 +230,14 @@ Add a `postbuild` script to `package.json`:
 }
 ```
 
-### 7. Delete `vercel.json`
+### 7. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- Create or update `.env` in the project root
+- For PM2: add to the `env` block in `ecosystem.config.js`
+
+### 8. Delete `vercel.json`
 
 Remove `vercel.json` from the project root after migrating its contents.
 

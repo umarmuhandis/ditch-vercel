@@ -62,14 +62,11 @@ The skill handles the rest — framework detection, compatibility analysis, migr
 
 ## How It Works
 
-1. **Detect framework** — Identifies Next.js, Astro, Remix, SvelteKit, Nuxt, or static site
-2. **Scan Vercel features** — Finds all `@vercel/*` packages, edge runtime usage, ISR, middleware, cron jobs, image optimization, etc.
-3. **Select target** — Picks the target platform (Cloudflare in v1)
-4. **Analyze compatibility** — Cross-references every detected feature against the target's support matrix
-5. **Build migration plan** — Produces a concrete plan with exact file paths, package changes, and code modifications
-6. **Get approval** — Presents the plan for your review. Nothing changes until you say "yes"
-7. **Execute** — Installs packages, swaps adapters, rewrites configs, removes Vercel dependencies
-8. **Next steps** — Prints a post-migration checklist: build commands, deploy commands, manual items
+1. **Scan** — Detects your framework, scans every `@vercel/*` dependency and Vercel-specific feature, and asks you to pick a target platform
+2. **Report** — Calculates a complexity score (GREEN / YELLOW / RED) showing estimated effort, automated items, attention items, and blockers
+3. **Plan + Approve** — Generates a concrete migration plan with exact file paths, package changes, and code modifications. **Nothing changes until you approve**
+4. **Execute** — Creates a git safety checkpoint, then installs packages, swaps adapters, rewrites configs, removes Vercel dependencies, and runs build + dev server verification
+5. **Done** — Prints a summary of all changes, remaining manual items, deploy commands, and undo instructions
 
 ## Supported Frameworks
 
