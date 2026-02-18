@@ -143,7 +143,14 @@ If the project has a build step, chain it:
 }
 ```
 
-### 7. Delete `vercel.json`
+### 7. Migrate environment variables
+
+Static sites rarely need runtime env vars. If your build uses env vars (e.g. `VITE_API_URL`), set them in Cloudflare Pages build settings or pass at build time.
+
+- **Cloudflare dashboard:** Workers/Pages > Settings > Environment Variables
+- **Build-time:** Set in `wrangler.toml` under `[vars]` or pass inline: `VITE_API_URL=https://api.example.com npm run build`
+
+### 8. Delete `vercel.json`
 
 Remove `vercel.json` from the project root.
 
@@ -204,7 +211,15 @@ Remove any Vercel/Cloudflare deploy scripts. If there's a build step:
 }
 ```
 
-### 4. Delete `vercel.json`
+### 4. Migrate environment variables
+
+Static sites rarely need runtime env vars. If your build uses env vars (e.g. `VITE_API_URL`), set them in your CI/CD pipeline or pass at build time:
+
+```bash
+VITE_API_URL=https://api.example.com npm run build
+```
+
+### 5. Delete `vercel.json`
 
 Remove `vercel.json` from the project root.
 

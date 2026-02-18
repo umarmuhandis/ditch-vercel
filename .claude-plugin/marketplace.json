@@ -21,7 +21,7 @@
       "license": "MIT",
       "source": "./",
       "category": "deployment",
-      "keywords": ["vercel", "cloudflare", "migration", "deploy"],
+      "keywords": ["vercel", "cloudflare", "vps", "migration", "deploy"],
       "skills": ["./skills/ditch-vercel"]
     }
   ]

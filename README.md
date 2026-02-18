@@ -2,34 +2,57 @@
 
 **AI-powered migration away from Vercel. One command. Zero config.**
 
-A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin that analyzes your Vercel project, builds a migration plan, and executes it after your approval.
+Analyzes your Vercel project, builds a migration plan, and executes it after your approval. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and other AI coding agents.
 
 ## Installation
+
+### Claude Code plugin (recommended)
 
 ```bash
 claude plugin add github:umarmuhandis/ditch-vercel
 ```
 
-## Usage
+### Bash installer (universal, zero dependencies)
 
 ```bash
-cd your-vercel-project
-claude
-> /ditch-vercel
+curl -fsSL https://raw.githubusercontent.com/umarmuhandis/ditch-vercel/main/install.sh | bash
 ```
 
-That's it. The plugin handles the rest.
+Automatically detects installed agents, downloads skill files, and sets up adapters. Supports `--dry-run` and `--uninstall`.
+
+### Manual
+
+Copy the `skills/ditch-vercel/` directory and `AGENTS.md` into your project root. For agent-specific adapters, also copy the relevant file from `adapters/`.
+
+### npx skills (legacy)
+
+> **Note:** The `skills` npm package is maintained by Vercel Labs. If you'd rather avoid that dependency, use any of the methods above.
+
+```bash
+npx skills add umarmuhandis/ditch-vercel
+```
+
+## Usage
+
+After installing, open your AI coding agent in a Vercel project:
+
+| Agent | How to invoke |
+|-------|--------------|
+| **Claude Code** | `/ditch-vercel` |
+| **Cursor** | Ask: *"migrate this project from Vercel"* |
+| **GitHub Copilot** | Ask: *"use the ditch-vercel skill to migrate"* |
+| **Codex** | Ask: *"run the ditch-vercel migration"* |
+| **Windsurf** | Ask: *"migrate from Vercel using ditch-vercel"* |
+
+The skill handles the rest — framework detection, compatibility analysis, migration planning, approval gate, and execution.
 
 ## How It Works
 
-1. **Detect framework** — Identifies Next.js, Astro, Remix, SvelteKit, Nuxt, or static site
-2. **Scan Vercel features** — Finds all `@vercel/*` packages, edge runtime usage, ISR, middleware, cron jobs, image optimization, etc.
-3. **Select target** — Picks the target platform (Cloudflare in v1)
-4. **Analyze compatibility** — Cross-references every detected feature against the target's support matrix
-5. **Build migration plan** — Produces a concrete plan with exact file paths, package changes, and code modifications
-6. **Get approval** — Presents the plan for your review. Nothing changes until you say "yes"
-7. **Execute** — Installs packages, swaps adapters, rewrites configs, removes Vercel dependencies
-8. **Next steps** — Prints a post-migration checklist: build commands, deploy commands, manual items
+1. **Scan** — Detects your framework, scans every `@vercel/*` dependency and Vercel-specific feature, and asks you to pick a target platform
+2. **Report** — Calculates a complexity score (GREEN / YELLOW / RED) showing estimated effort, automated items, attention items, and blockers
+3. **Plan + Approve** — Generates a concrete migration plan with exact file paths, package changes, and code modifications. **Nothing changes until you approve**
+4. **Execute** — Creates a git safety checkpoint, then installs packages, swaps adapters, rewrites configs, removes Vercel dependencies, and runs build + dev server verification
+5. **Done** — Prints a summary of all changes, remaining manual items, deploy commands, and undo instructions
 
 ## Supported Frameworks
 
@@ -47,24 +70,25 @@ That's it. The plugin handles the rest.
 | Target | Status |
 |--------|--------|
 | **Cloudflare** (Workers + Pages) | Available |
+| **VPS** (Node.js + PM2 + Nginx) | Available |
 | Railway | Planned |
 | Fly.io | Planned |
-| VPS / Docker | Planned |
 
 ## Project Structure
 
 ```
+AGENTS.md                     # Universal agent discovery (Linux Foundation standard)
+install.sh                    # Zero-dependency bash installer
+adapters/
+  cursor.mdc                  # Cursor adapter
+  windsurf.md                 # Windsurf adapter
+  clinerules.md               # Cline/Roo adapter
 skills/ditch-vercel/
-  SKILL.md              # Main orchestrator — the 8-step migration flow
-  frameworks/           # Framework-specific migration knowledge
-    nextjs.md
-    astro.md
-    remix.md
-    sveltekit.md
-    nuxt.md
-    static.md
-  targets/              # Target platform knowledge
-    cloudflare.md
+  SKILL.md                    # Main orchestrator — the 5-phase migration flow
+  frameworks/                 # Framework-specific migration knowledge
+    nextjs.md, astro.md, remix.md, sveltekit.md, nuxt.md, static.md
+  targets/                    # Target platform knowledge
+    cloudflare.md, vps.md
 ```
 
 ## Contributing
@@ -77,7 +101,7 @@ Create `skills/ditch-vercel/frameworks/<framework>.md` with:
 - Step-by-step migration instructions
 - Compatibility notes (Supported / Partial / Manual)
 
-Then add the framework to the detection table in `SKILL.md` Step 1.
+Then add the framework to the detection table in `SKILL.md` Phase 1.
 
 ### Add a new target platform
 
@@ -89,7 +113,7 @@ Create `skills/ditch-vercel/targets/<target>.md` with:
 - Config templates
 - Essential CLI commands
 
-Then add the target to `SKILL.md` Step 3.
+Then add the target to `SKILL.md` Phase 1.
 
 ## License
 

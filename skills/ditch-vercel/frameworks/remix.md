@@ -19,8 +19,10 @@
 ### 1. Uninstall Vercel packages
 
 ```bash
-npm uninstall @remix-run/vercel @vercel/remix @remix-run/serve
+npm uninstall @remix-run/vercel @vercel/remix @remix-run/serve @vercel/analytics @vercel/speed-insights @vercel/og
 ```
+
+Only include `@vercel/analytics`, `@vercel/speed-insights`, and `@vercel/og` if they are in `package.json`. Remove their imports and usage from source files (see Compatibility Notes for replacements).
 
 ### 2. Install Cloudflare packages
 
@@ -148,7 +150,15 @@ bucket = "./build/client"
 }
 ```
 
-### 8. Delete `vercel.json`
+### 8. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- **Non-secret values:** Add to `wrangler.toml` under `[vars]`
+- **Secrets (API keys, tokens):** Use `wrangler secret put <NAME>`
+- **Dashboard alternative:** Cloudflare dashboard > Workers/Pages > Settings > Environment Variables
+
+### 9. Delete `vercel.json`
 
 Remove `vercel.json` from the project root.
 
@@ -161,8 +171,10 @@ Remove `vercel.json` from the project root.
 ### 1. Uninstall Vercel packages
 
 ```bash
-npm uninstall @remix-run/vercel @vercel/remix
+npm uninstall @remix-run/vercel @vercel/remix @vercel/analytics @vercel/speed-insights @vercel/og
 ```
+
+Only include `@vercel/analytics`, `@vercel/speed-insights`, and `@vercel/og` if they are in `package.json`. Remove their imports and usage from source files (see Compatibility Notes (VPS) for replacements).
 
 ### 2. Install Node.js packages
 
@@ -214,7 +226,7 @@ import type { LoaderFunctionArgs } from '@remix-run/node';
 
 Keep the existing `dev` and `build` scripts unchanged.
 
-### 6. Create PM2 ecosystem config and clean up
+### 6. Create PM2 ecosystem config
 
 Create `ecosystem.config.js` in the project root:
 
@@ -233,6 +245,15 @@ module.exports = {
   }],
 };
 ```
+
+### 7. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- Create or update `.env` in the project root
+- For PM2: add to the `env` block in `ecosystem.config.js`
+
+### 8. Delete `vercel.json`
 
 Delete `vercel.json` from the project root.
 

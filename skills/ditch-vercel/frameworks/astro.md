@@ -24,7 +24,17 @@ npm uninstall @astrojs/vercel
 npm install @astrojs/cloudflare
 ```
 
-### 3. Update `astro.config.mjs`
+### 3. Remove common Vercel packages
+
+If the project uses any common Vercel packages, uninstall them:
+
+```bash
+npm uninstall @vercel/analytics @vercel/speed-insights @vercel/og
+```
+
+Only run for packages actually in `package.json`. Remove their imports and usage from source files (see Compatibility Notes for replacements).
+
+### 4. Update `astro.config.mjs`
 
 Replace the Vercel adapter import and configuration with Cloudflare:
 
@@ -51,7 +61,7 @@ export default defineConfig({
 
 If the project uses `output: 'static'` (no adapter), no adapter swap is needed — just set up Cloudflare Pages for static hosting (see `static.md`).
 
-### 4. Create `wrangler.toml`
+### 5. Create `wrangler.toml`
 
 Create `wrangler.toml` in the project root. Derive `name` from `package.json` `name`:
 
@@ -64,7 +74,7 @@ compatibility_flags = ["nodejs_compat"]
 directory = "./dist/client"
 ```
 
-### 5. Update `package.json` scripts
+### 6. Update `package.json` scripts
 
 Add/replace these scripts:
 
@@ -79,14 +89,22 @@ Add/replace these scripts:
 
 Keep the existing `dev` and `build` scripts unchanged.
 
-### 6. Migrate `vercel.json` config
+### 7. Migrate `vercel.json` config
 
 If `vercel.json` has rewrites/redirects/headers:
 - **Redirects:** Create a `public/_redirects` file (format: `from to statusCode`)
 - **Headers:** Create a `public/_headers` file (format: `[path]\n  Header-Name: value`)
 - **Rewrites:** Create entries in `public/_redirects` with status `200`
 
-### 7. Delete `vercel.json`
+### 8. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- **Non-secret values:** Add to `wrangler.toml` under `[vars]`
+- **Secrets (API keys, tokens):** Use `wrangler secret put <NAME>`
+- **Dashboard alternative:** Cloudflare dashboard > Workers/Pages > Settings > Environment Variables
+
+### 9. Delete `vercel.json`
 
 Remove `vercel.json` from the project root.
 
@@ -108,7 +126,17 @@ npm uninstall @astrojs/vercel
 npm install @astrojs/node
 ```
 
-### 3. Update `astro.config.mjs`
+### 3. Remove common Vercel packages
+
+If the project uses any common Vercel packages, uninstall them:
+
+```bash
+npm uninstall @vercel/analytics @vercel/speed-insights @vercel/og
+```
+
+Only run for packages actually in `package.json`. Remove their imports and usage from source files (see Compatibility Notes (VPS) for replacements).
+
+### 4. Update `astro.config.mjs`
 
 Replace the Vercel adapter with the Node.js adapter:
 
@@ -135,7 +163,7 @@ export default defineConfig({
 
 If the project uses `output: 'static'` (no adapter), no adapter swap is needed — just serve the `dist/` directory with Nginx (see `static.md`).
 
-### 4. Update `package.json` scripts
+### 5. Update `package.json` scripts
 
 ```json
 {
@@ -147,7 +175,7 @@ If the project uses `output: 'static'` (no adapter), no adapter swap is needed �
 
 Keep the existing `dev` and `build` scripts unchanged.
 
-### 5. Create PM2 ecosystem config
+### 6. Create PM2 ecosystem config
 
 Create `ecosystem.config.js` in the project root:
 
@@ -166,9 +194,18 @@ module.exports = {
 };
 ```
 
-### 6. Migrate `vercel.json` and clean up
+### 7. Migrate `vercel.json` and clean up
 
 If `vercel.json` has rewrites/redirects/headers, move them to Astro middleware or Nginx config.
+
+### 8. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- Create or update `.env` in the project root
+- For PM2: add to the `env` block in `ecosystem.config.js`
+
+### 9. Delete `vercel.json`
 
 Delete `vercel.json` from the project root.
 

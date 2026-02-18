@@ -42,7 +42,17 @@ Uninstall the packages:
 npm uninstall @nuxtjs/vercel-analytics
 ```
 
-### 3. Create `wrangler.toml`
+### 3. Remove common Vercel packages
+
+If the project uses any common Vercel packages, uninstall them:
+
+```bash
+npm uninstall @vercel/analytics @vercel/speed-insights @vercel/og
+```
+
+Only run for packages actually in `package.json`. Remove their imports and usage from source files (see Compatibility Notes for replacements).
+
+### 4. Create `wrangler.toml`
 
 Create `wrangler.toml` in the project root. Derive `name` from `package.json` `name`:
 
@@ -55,7 +65,7 @@ compatibility_flags = ["nodejs_compat"]
 directory = "dist/"
 ```
 
-### 4. Update `package.json` scripts
+### 5. Update `package.json` scripts
 
 ```json
 {
@@ -68,7 +78,7 @@ directory = "dist/"
 
 Keep the existing `dev`, `build`, `generate`, and `postinstall` scripts unchanged.
 
-### 5. Migrate `vercel.json` config
+### 6. Migrate `vercel.json` config
 
 If `vercel.json` has rewrites/redirects/headers:
 - **Redirects:** Create a `public/_redirects` file (format: `from to statusCode`)
@@ -86,7 +96,15 @@ export default defineNuxtConfig({
 });
 ```
 
-### 6. Delete `vercel.json`
+### 7. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- **Non-secret values:** Add to `wrangler.toml` under `[vars]`
+- **Secrets (API keys, tokens):** Use `wrangler secret put <NAME>`
+- **Dashboard alternative:** Cloudflare dashboard > Workers/Pages > Settings > Environment Variables
+
+### 8. Delete `vercel.json`
 
 Remove `vercel.json` from the project root.
 
@@ -112,7 +130,17 @@ Uninstall the packages:
 npm uninstall @nuxtjs/vercel-analytics
 ```
 
-### 2. Set Nitro preset to `node-server`
+### 2. Remove common Vercel packages
+
+If the project uses any common Vercel packages, uninstall them:
+
+```bash
+npm uninstall @vercel/analytics @vercel/speed-insights @vercel/og
+```
+
+Only run for packages actually in `package.json`. Remove their imports and usage from source files (see Compatibility Notes (VPS) for replacements).
+
+### 3. Set Nitro preset to `node-server`
 
 Update `nuxt.config.ts` to use the `node-server` preset:
 
@@ -126,7 +154,7 @@ export default defineNuxtConfig({
 
 If the config previously had `preset: 'vercel'` or `preset: 'vercel-edge'`, replace it.
 
-### 3. Update `package.json` scripts
+### 4. Update `package.json` scripts
 
 ```json
 {
@@ -138,7 +166,7 @@ If the config previously had `preset: 'vercel'` or `preset: 'vercel-edge'`, repl
 
 Keep the existing `dev`, `build`, `generate`, and `postinstall` scripts unchanged.
 
-### 4. Create PM2 ecosystem config
+### 5. Create PM2 ecosystem config
 
 Create `ecosystem.config.js` in the project root:
 
@@ -157,7 +185,7 @@ module.exports = {
 };
 ```
 
-### 5. Migrate `vercel.json` and clean up
+### 6. Migrate `vercel.json` and clean up
 
 If `vercel.json` has rewrites/redirects/headers, move them to `routeRules` in `nuxt.config.ts`:
 
@@ -172,6 +200,15 @@ export default defineNuxtConfig({
   },
 });
 ```
+
+### 7. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- Create or update `.env` in the project root
+- For PM2: add to the `env` block in `ecosystem.config.js`
+
+### 8. Delete `vercel.json`
 
 Delete `vercel.json` from the project root.
 

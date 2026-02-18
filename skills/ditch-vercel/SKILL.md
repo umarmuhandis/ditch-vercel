@@ -299,13 +299,13 @@ After all file changes are complete:
 
 1. Set the build verification task to `in_progress`
 2. Detect the build command:
-   - Next.js + Cloudflare: `npm run build:cf` (or the build:cf script added in migration)
-   - Next.js + VPS: `npm run build`
-   - Astro: `npm run build` (runs `astro build`)
-   - Remix: `npm run build` (runs `remix vite:build`)
-   - SvelteKit: `npm run build`
-   - Nuxt: `npm run build` (runs `nuxt build`)
-   - Static with build script: `npm run build`
+   - Next.js + Cloudflare: `<pkg> run build:cf` (or the build:cf script added in migration)
+   - Next.js + VPS: `<pkg> run build`
+   - Astro: `<pkg> run build` (runs `astro build`)
+   - Remix: `<pkg> run build` (runs `remix vite:build`)
+   - SvelteKit: `<pkg> run build`
+   - Nuxt: `<pkg> run build` (runs `nuxt build`)
+   - Static with build script: `<pkg> run build`
    - Static without build: skip (no build needed)
 3. Run the build command via `Bash`
 4. If build passes: mark task `completed`
@@ -390,4 +390,4 @@ Only include "STILL NEEDS YOUR ATTENTION" if there are remaining items. Derive t
 - **Monorepo awareness**: If the project root contains `apps/` or `packages/` directories, ask the user which app to migrate.
 - **Always use TaskCreate/TaskUpdate** to track execution progress during Phase 4.
 - **Task #1 must always be the git safety checkpoint.**
-- **Never mark a task as completed if the action failed.** Failed tasks stay `in_progress` with recovery options presented to the developer.
+- **Never mark a task as completed if the action failed.** Failed tasks stay `in_progress` with recovery options presented to the developer. Note: user-initiated skips (where the developer explicitly chooses "Skip this step") are NOT failures — mark these `completed` with a "[SKIPPED]" tag.
