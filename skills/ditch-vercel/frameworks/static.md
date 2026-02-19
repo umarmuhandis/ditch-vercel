@@ -39,7 +39,7 @@ Create `wrangler.toml` in the project root. Derive `name` from `package.json` `n
 
 ```toml
 name = "<project-name>"
-compatibility_date = "2024-09-23"
+compatibility_date = "<today's date in YYYY-MM-DD format>"
 
 [assets]
 directory = "<output-dir>"
@@ -153,8 +153,6 @@ Static sites rarely need runtime env vars. If your build uses env vars (e.g. `VI
 ### 8. Delete `vercel.json`
 
 Remove `vercel.json` from the project root.
-
----
 
 ---
 

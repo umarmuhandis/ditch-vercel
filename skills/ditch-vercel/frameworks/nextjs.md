@@ -30,7 +30,7 @@ Create `wrangler.toml` in the project root. Derive the `name` field from `packag
 ```toml
 name = "<project-name-from-package.json>"
 main = ".open-next/worker.js"
-compatibility_date = "2024-09-23"
+compatibility_date = "<today's date in YYYY-MM-DD format>"
 compatibility_flags = ["nodejs_compat"]
 
 [assets]
@@ -105,8 +105,6 @@ Copy environment variable names from the Vercel dashboard (Settings > Environmen
 ### 7. Delete `vercel.json`
 
 Remove `vercel.json` from the project root after migrating its contents.
-
----
 
 ---
 
@@ -287,7 +285,7 @@ Remove `vercel.json` from the project root after migrating its contents.
 | Pages Router | 0 | Automated | Supported | Fully supported with `output: 'standalone'` |
 | API Routes | 0 | Automated | Supported | Run as part of the Node.js server process |
 | Server Actions | 0 | Automated | Supported | Handled by the Node.js server |
-| ISR | 0 | Automated | Supported | Works natively with file-system cache in standalone mode. Single-server only (no distributed cache). |
+| ISR | 1 | Attention | Partial | Works natively with file-system cache in standalone mode. Single-server only — no distributed cache invalidation. Cache lost on restart. |
 | `@vercel/og` | 0 | Automated | Supported | Works as-is in Node.js environments. Uses `satori` + `@resvg/resvg-js` under the hood. No changes needed. |
 
 ### Partial

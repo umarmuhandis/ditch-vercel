@@ -36,7 +36,7 @@ Mapping of Vercel features to VPS equivalents. Use this to generate the compatib
 | Serverless Functions | Native Node.js server | 0 | Automated | Supported | Framework runs as a standard Node.js process. No function isolation — all routes served by one process. |
 | Edge Middleware | Node.js middleware | 0 | Automated | Supported | Runs as standard server-side middleware. No geo-distributed execution, but functionally equivalent. |
 | Image Optimization | `sharp` (self-hosted) | 1 | Attention | Partial | Install `sharp` for local image optimization. Works out of the box with most frameworks. No CDN optimization — consider adding Cloudflare CDN (free tier) in front. |
-| ISR | Framework-native caching | 1 | Attention | Partial | Next.js ISR works natively with file-system cache in standalone mode. Other frameworks use their own caching strategies. Single-server only — no distributed cache. |
+| ISR | Framework-native caching | 1 | Attention | Partial | Next.js ISR works natively with file-system cache in standalone mode. Other frameworks use their own caching strategies. Single-server only — no distributed cache. Cache lost on restart. |
 | Cron Jobs | crontab or `node-cron` | 1 | Attention | Partial | Use system `crontab` for simple schedules, or `node-cron` package for in-process scheduling. Different setup from `vercel.json` crons. |
 | Environment Variables | `.env` files + PM2/systemd | 0 | Automated | Supported | Use `.env` files (loaded by framework or `dotenv`). For PM2: `ecosystem.config.js` `env` section. For systemd: `EnvironmentFile=` directive. |
 | Preview Deployments | — | 3 | Blocker | Manual | No built-in equivalent. Requires manual setup (separate branch deployments, Docker Compose per branch, or a tool like Coolify/Dokku). |
@@ -193,3 +193,9 @@ CMD ["node", "<entry-point>"]
 The `<build-output>` and `<entry-point>` vary per framework — see framework knowledge files for exact values.
 
 Docker is documented as an alternative, not the primary migration path. The main migration steps use bare-metal PM2 + Nginx.
+
+## Reference URLs
+- https://pm2.keymetrics.io/docs/usage/quick-start/
+- https://nginx.org/en/docs/beginners_guide.html
+- https://certbot.eff.org/instructions
+- https://nodejs.org/en/docs/guides/nodejs-docker-webapp

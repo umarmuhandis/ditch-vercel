@@ -58,11 +58,11 @@ Create `wrangler.toml` in the project root. Derive `name` from `package.json` `n
 
 ```toml
 name = "<project-name-from-package.json>"
-compatibility_date = "2024-09-23"
+compatibility_date = "<today's date in YYYY-MM-DD format>"
 compatibility_flags = ["nodejs_compat"]
 
 [assets]
-directory = "dist/"
+directory = ".output/public"
 ```
 
 ### 5. Update `package.json` scripts
@@ -70,8 +70,8 @@ directory = "dist/"
 ```json
 {
   "scripts": {
-    "deploy": "nuxt build && wrangler pages deploy dist/",
-    "preview": "nuxt build && wrangler pages dev dist/"
+    "deploy": "nuxt build && wrangler pages deploy .output/public",
+    "preview": "nuxt build && wrangler pages dev .output/public"
   }
 }
 ```
@@ -107,8 +107,6 @@ Copy environment variable names from the Vercel dashboard (Settings > Environmen
 ### 8. Delete `vercel.json`
 
 Remove `vercel.json` from the project root.
-
----
 
 ---
 
@@ -263,11 +261,6 @@ Delete `vercel.json` from the project root.
 | Nitro route rules | 0 | Automated | Supported | `routeRules` for caching, redirects, prerendering work on Node.js. |
 | Node.js APIs | 0 | Automated | Supported | Full Node.js API access — no restrictions. |
 | ISR | 0 | Automated | Supported | Nitro supports `routeRules` with `swr` (stale-while-revalidate) natively on the `node-server` preset. |
-
-### Partial
-
-| Feature | Weight | Category | Status | Action |
-|---------|--------|----------|--------|--------|
 | `nuxt/image` (`@nuxt/image`) | 0 | Automated | Supported | Replace `provider: 'vercel'` with `provider: 'ipx'` for self-hosted optimization. `ipx` uses `sharp` under the hood — works natively on VPS. |
 
 ### Manual

@@ -1,6 +1,6 @@
 ---
 name: ditch-vercel
-description: Migrate a project from Vercel to another platform. Use when user wants to leave Vercel, migrate to Cloudflare/Railway/VPS, or run /ditch-vercel.
+description: Migrate a project from Vercel to another platform. Use when user wants to leave Vercel, migrate to Cloudflare/VPS, or run /ditch-vercel.
 argument-hint: "[target-platform]"
 allowed-tools: Read, Glob, Grep, Bash, Edit, Write, AskUserQuestion, TaskCreate, TaskUpdate, TaskList
 ---
@@ -14,6 +14,10 @@ You are running the **ditch-vercel** migration skill. Follow the 5-phase flow be
 ## Phase 1: SCAN
 
 Silently detect framework, Vercel features, and target platform in one pass. Minimal output — the report comes in Phase 2.
+
+### Pre-flight check
+
+Verify the project is a git repository by checking for a `.git` directory. If not a git repo, warn the user: "This project is not a git repository. The safety checkpoint (Phase 4) requires git for rollback. Initialize with `git init` first, or proceed without rollback protection." Ask the user whether to continue or stop.
 
 ### 1a. Detect framework
 
@@ -51,6 +55,7 @@ Scan for every Vercel-specific feature. Check every item — do NOT skip any.
 - `@vercel/postgres`
 - `@vercel/edge`
 - `@vercel/og`
+- `@vercel/edge-config`
 - Any other `@vercel/*` package
 
 **Framework-specific Vercel features** — Scan source files:
@@ -234,8 +239,9 @@ Begin the git safety checkpoint.
 
 1. Check `git status`. If working tree is dirty:
    ```bash
-   git add -A && git commit -m "chore: pre-migration checkpoint (ditch-vercel)"
+   git add -u && git commit -m "chore: pre-migration checkpoint (ditch-vercel)"
    ```
+   **Warning:** Only stage tracked files (`git add -u`). Do NOT use `git add -A` — it can accidentally commit `.env` files or credentials. If there are important untracked files the user wants to preserve, tell them to `git add` those specific files first.
 2. If working tree is clean, note the current HEAD SHA.
 3. Store the checkpoint SHA for rollback.
 4. Mark the checkpoint step as done.
@@ -331,7 +337,7 @@ After build passes, verify the app starts and responds locally.
    - Remix + VPS: `npx remix-serve build/server/index.js` (port 3000)
    - SvelteKit + Cloudflare: `npx wrangler pages dev .svelte-kit/cloudflare` (port 8788)
    - SvelteKit + VPS: `node build/index.js` (port 3000)
-   - Nuxt + Cloudflare: `npx wrangler pages dev dist/` (port 8788)
+   - Nuxt + Cloudflare: `npx wrangler pages dev .output/public` (port 8788)
    - Nuxt + VPS: `node .output/server/index.mjs` (port 3000)
    - Static + Cloudflare: `npx wrangler pages dev <output-dir>` (port 8788)
    - Static + VPS: `npx serve <output-dir>` (port 3000)

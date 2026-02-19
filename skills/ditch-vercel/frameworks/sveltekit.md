@@ -66,7 +66,7 @@ Create `wrangler.toml` in the project root. Derive `name` from `package.json` `n
 
 ```toml
 name = "<project-name-from-package.json>"
-compatibility_date = "2024-09-23"
+compatibility_date = "<today's date in YYYY-MM-DD format>"
 compatibility_flags = ["nodejs_compat"]
 
 [assets]
@@ -134,8 +134,6 @@ Copy environment variable names from the Vercel dashboard (Settings > Environmen
 ### 10. Delete `vercel.json`
 
 Remove `vercel.json` from the project root.
-
----
 
 ---
 

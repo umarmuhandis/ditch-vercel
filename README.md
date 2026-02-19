@@ -4,6 +4,22 @@
 
 Analyzes your Vercel project, builds a migration plan, and executes it after your approval. Works with Claude Code, Cursor, GitHub Copilot, Codex, Windsurf, and other AI coding agents.
 
+## Prerequisites
+
+- **git** — required for the safety checkpoint (rollback on failure)
+- **Node.js 18+** — required by most frameworks
+- **wrangler** — required for Cloudflare deployments (`npm i -g wrangler`)
+- **curl** or **wget** — required for the bash installer
+
+## Quickstart
+
+```bash
+# In your Vercel project directory:
+curl -fsSL https://raw.githubusercontent.com/umarmuhandis/ditch-vercel/main/install.sh | bash
+
+# Then open your AI coding agent and run the migration
+```
+
 ## Installation
 
 ### Claude Code plugin (recommended)

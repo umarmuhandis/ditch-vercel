@@ -64,6 +64,12 @@ download() {
     curl -fsSL "$url" -o "$dest"
   elif command -v wget >/dev/null 2>&1; then
     wget -qO "$dest" "$url"
+    # wget doesn't fail on 404 by default — validate the download
+    if [ -f "$dest" ] && head -c 20 "$dest" | grep -qi '<!doctype\|<html'; then
+      err "Download failed (got HTML error page): $url"
+      rm -f "$dest"
+      return 1
+    fi
   else
     err "Neither curl nor wget found. Install one and retry."
     exit 1
@@ -147,7 +153,13 @@ info "Installing ditch-vercel..."
 echo ""
 
 agents=$(detect_agents)
-info "Detected agents:$(echo "$agents" | tr ' ' ', ' | sed 's/^,//' | sed 's/,/, /g')"
+# Filter out agents-md for display (it's always installed, not a real agent)
+display_agents=$(echo "$agents" | tr ' ' '\n' | grep -v '^$' | grep -v 'agents-md' | tr '\n' ' ')
+if [ -n "$(echo "$display_agents" | tr -d ' ')" ]; then
+  info "Detected agents:$(echo "$display_agents" | tr ' ' '\n' | grep -v '^$' | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')"
+else
+  info "No specific agents detected. Installing universal AGENTS.md."
+fi
 echo ""
 
 # Download skill files (always needed)

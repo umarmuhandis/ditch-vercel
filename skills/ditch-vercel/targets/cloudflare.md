@@ -70,7 +70,7 @@ Base configuration for any framework. Framework-specific files (e.g., `nextjs.md
 
 ```toml
 name = "<project-name>"
-compatibility_date = "2024-09-23"
+compatibility_date = "<today's date in YYYY-MM-DD format>"
 compatibility_flags = ["nodejs_compat"]
 ```
 

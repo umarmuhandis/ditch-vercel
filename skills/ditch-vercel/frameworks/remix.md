@@ -31,19 +31,13 @@ npm install @remix-run/cloudflare
 npm install -D @remix-run/dev wrangler
 ```
 
-If using Remix v2+ with Vite, also install:
-
-```bash
-npm install @remix-run/cloudflare-pages
-```
-
 ### 3. Update config
 
 **Remix v2+ with Vite (`vite.config.ts`):**
 
 ```ts
 import { vitePlugin as remix } from '@remix-run/dev';
-import { cloudflareDevProxy } from '@remix-run/dev/vite/cloudflare';
+import { cloudflareDevProxyVitePlugin as cloudflareDevProxy } from '@remix-run/dev';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -132,12 +126,11 @@ Create `wrangler.toml` in the project root. Derive `name` from `package.json` `n
 
 ```toml
 name = "<project-name-from-package.json>"
-compatibility_date = "2024-09-23"
+compatibility_date = "<today's date in YYYY-MM-DD format>"
 compatibility_flags = ["nodejs_compat"]
-
-[site]
-bucket = "./build/client"
 ```
+
+Note: Do NOT add a `[site]` section — that is the legacy Workers Sites API. For Cloudflare Pages, static assets are specified via the `wrangler pages deploy` command argument instead.
 
 ### 7. Update `package.json` scripts
 
@@ -161,8 +154,6 @@ Copy environment variable names from the Vercel dashboard (Settings > Environmen
 ### 9. Delete `vercel.json`
 
 Remove `vercel.json` from the project root.
-
----
 
 ---
 
@@ -320,3 +311,4 @@ Delete `vercel.json` from the project root.
 ## Reference URLs
 - https://remix.run/docs/en/main/guides/templates
 - https://developers.cloudflare.com/pages/framework-guide/deploy-a-remix-site/
+- llms.txt: https://remix.run/llms.txt
