@@ -140,20 +140,6 @@ For each detected feature:
 
 Only include sections that have items. If there are no Blockers, omit the BLOCKERS section. If there are no Attention items, omit the NEEDS YOUR ATTENTION section.
 
-### 2d. Ask the developer
-
-Ask the user:
-
-```
-Ready to migrate?
-- "Yes, show me the plan"
-- "No, just wanted to see the report"
-```
-
-If the developer selects "No": stop gracefully. Output: `No changes made. Run /ditch-vercel anytime to continue.`
-
-If "Yes": proceed to Phase 3.
-
 ---
 
 ## Phase 3: PLAN + APPROVE
@@ -205,11 +191,11 @@ Ask the user:
 Approve the migration plan?
 - "Yes, proceed with migration"
 - "Modify the plan" → gather feedback, revise, re-approve
-- "Cancel migration" → stop, no changes
+- "Just wanted the report" → stop, no changes
 ```
 
 If "Modify the plan": loop — gather feedback, revise the plan, present for approval again.
-If "Cancel migration": stop. Output: `Migration cancelled. No changes made.`
+If "Just wanted the report": stop gracefully. Output: `No changes made. Run /ditch-vercel anytime to continue.`
 
 **CRITICAL: Do NOT create, modify, or delete any project files before receiving "Yes, proceed with migration".**
 
