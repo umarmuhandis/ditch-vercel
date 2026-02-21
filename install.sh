@@ -139,8 +139,19 @@ if [ "$UNINSTALL" = true ]; then
     fi
   done
 
+  # Remove Claude Code skill symlink
+  if [ -L ".claude/skills/ditch-vercel" ]; then
+    if [ "$DRY_RUN" = true ]; then
+      info "Would remove: .claude/skills/ditch-vercel (symlink)"
+    else
+      rm ".claude/skills/ditch-vercel"
+      ok "Removed .claude/skills/ditch-vercel (symlink)"
+    fi
+    removed=$((removed + 1))
+  fi
+
   # Clean up empty directories
-  for dir in .agents/skills/ditch-vercel/frameworks .agents/skills/ditch-vercel/targets .agents/skills/ditch-vercel .agents/skills .agents adapters; do
+  for dir in .agents/skills/ditch-vercel/frameworks .agents/skills/ditch-vercel/targets .agents/skills/ditch-vercel .agents/skills .agents adapters .claude/skills .claude; do
     if [ -d "$dir" ] && [ -z "$(ls -A "$dir" 2>/dev/null)" ]; then
       if [ "$DRY_RUN" = true ]; then
         info "Would remove empty dir: $dir"
@@ -262,7 +273,17 @@ for agent in $agents; do
         fi
       fi
       ;;
-    claude-code|agents-md)
+    claude-code)
+      info "Registering skill with Claude Code..."
+      if [ "$DRY_RUN" = true ]; then
+        info "Would create: .claude/skills/ditch-vercel -> ../../.agents/skills/ditch-vercel"
+      else
+        mkdir -p .claude/skills
+        ln -sfn ../../.agents/skills/ditch-vercel .claude/skills/ditch-vercel
+        ok ".claude/skills/ditch-vercel (symlink)"
+      fi
+      ;;
+    agents-md)
       # Already handled above (skill files + AGENTS.md)
       ;;
   esac
