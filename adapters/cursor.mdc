@@ -8,8 +8,8 @@ alwaysApply: false
 
 When the user asks to migrate from Vercel, leave Vercel, or run "ditch-vercel":
 
-1. Read the file `skills/ditch-vercel/SKILL.md` in the project root
+1. Read the file `.agents/skills/ditch-vercel/SKILL.md` in the project root
 2. Follow the 5-phase flow defined there exactly
-3. Read framework and target files from `skills/ditch-vercel/frameworks/` and `skills/ditch-vercel/targets/` as directed
+3. Read framework and target files from `.agents/skills/ditch-vercel/frameworks/` and `.agents/skills/ditch-vercel/targets/` as directed
 
-Entry point: `skills/ditch-vercel/SKILL.md`
+Entry point: `.agents/skills/ditch-vercel/SKILL.md`

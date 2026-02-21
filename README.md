@@ -39,7 +39,7 @@ Automatically detects installed agents, downloads skill files, and sets up adapt
 
 ### Manual
 
-Copy the `skills/ditch-vercel/` directory and `AGENTS.md` into your project root. For agent-specific adapters, also copy the relevant file from `adapters/`.
+Copy the `skills/ditch-vercel/` directory to `.agents/skills/ditch-vercel/` in your project root, and copy `AGENTS.md` to the project root. For agent-specific adapters, also copy the relevant file from `adapters/`.
 
 ### npx skills (legacy)
 
@@ -93,14 +93,24 @@ The skill handles the rest — framework detection, compatibility analysis, migr
 
 ## Project Structure
 
+**Repo source layout:**
+
+```
+install.sh                    # Zero-dependency bash installer
+skills/ditch-vercel/          # Skill source files (repo layout)
+  SKILL.md, frameworks/, targets/
+adapters/                     # Agent-specific adapters
+```
+
+**Installed layout** (what the installer creates in your project):
+
 ```
 AGENTS.md                     # Universal agent discovery (Linux Foundation standard)
-install.sh                    # Zero-dependency bash installer
 adapters/
   cursor.mdc                  # Cursor adapter
   windsurf.md                 # Windsurf adapter
   clinerules.md               # Cline/Roo adapter
-skills/ditch-vercel/
+.agents/skills/ditch-vercel/
   SKILL.md                    # Main orchestrator — the 5-phase migration flow
   frameworks/                 # Framework-specific migration knowledge
     nextjs.md, astro.md, remix.md, sveltekit.md, nuxt.md, static.md

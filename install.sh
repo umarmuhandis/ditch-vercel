@@ -111,10 +111,23 @@ detect_agents() {
 if [ "$UNINSTALL" = true ]; then
   info "Uninstalling ditch-vercel..."
 
-  all_files="$SKILL_FILES $ADAPTER_FILES"
   removed=0
 
-  for f in $all_files; do
+  # Remove skill files (installed under .agents/)
+  for f in $SKILL_FILES; do
+    if [ -f ".agents/$f" ]; then
+      if [ "$DRY_RUN" = true ]; then
+        info "Would remove: .agents/$f"
+      else
+        rm ".agents/$f"
+        ok "Removed .agents/$f"
+      fi
+      removed=$((removed + 1))
+    fi
+  done
+
+  # Remove adapter files (installed at project root)
+  for f in $ADAPTER_FILES; do
     if [ -f "$f" ]; then
       if [ "$DRY_RUN" = true ]; then
         info "Would remove: $f"
@@ -127,7 +140,7 @@ if [ "$UNINSTALL" = true ]; then
   done
 
   # Clean up empty directories
-  for dir in skills/ditch-vercel/frameworks skills/ditch-vercel/targets skills/ditch-vercel adapters; do
+  for dir in .agents/skills/ditch-vercel/frameworks .agents/skills/ditch-vercel/targets .agents/skills/ditch-vercel .agents/skills .agents adapters; do
     if [ -d "$dir" ] && [ -z "$(ls -A "$dir" 2>/dev/null)" ]; then
       if [ "$DRY_RUN" = true ]; then
         info "Would remove empty dir: $dir"
@@ -165,13 +178,13 @@ echo ""
 # Download skill files (always needed)
 info "Downloading skill files..."
 for f in $SKILL_FILES; do
-  dir=$(dirname "$f")
+  dir=$(dirname ".agents/$f")
   if [ "$DRY_RUN" = true ]; then
-    info "Would create: $f"
+    info "Would create: .agents/$f"
   else
     mkdir -p "$dir"
-    download "${BASE_URL}/${f}" "$f"
-    ok "$f"
+    download "${BASE_URL}/${f}" ".agents/$f"
+    ok ".agents/$f"
   fi
 done
 echo ""

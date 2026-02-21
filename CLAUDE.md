@@ -35,7 +35,7 @@ skills/ditch-vercel/
 
 **Target files** (`cloudflare.md`, `vps.md`) contain: scoring legend, Vercel-to-platform feature mapping with Weight/Category columns, known limitations, config templates (`wrangler.toml`), and CLI commands.
 
-**Adapter files** are thin pointers that tell each agent to read `skills/ditch-vercel/SKILL.md`. The installer copies them to agent-specific config directories.
+**Adapter files** are thin pointers that tell each agent to read `.agents/skills/ditch-vercel/SKILL.md`. The installer copies them to agent-specific config directories.
 
 The separation is intentional — adding a new framework means creating one file in `frameworks/` and adding a row to SKILL.md Phase 1. Adding a new target means creating one file in `targets/` and updating Phase 1.
 
