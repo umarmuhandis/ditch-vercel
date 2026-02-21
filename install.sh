@@ -261,6 +261,16 @@ if [ "$DRY_RUN" = true ]; then
 else
   ok "ditch-vercel installed!"
   echo ""
-  info "To migrate, open your AI agent and ask: \"migrate from Vercel\""
-  info "Or in Claude Code: /ditch-vercel"
+  info "To start the migration, open your agent and use one of these:"
+  echo ""
+
+  for agent in $agents; do
+    case "$agent" in
+      claude-code) info "  Claude Code:     /ditch-vercel" ;;
+      cursor)      info "  Cursor:          Ask \"migrate this project from Vercel\"" ;;
+      windsurf)    info "  Windsurf:        Ask \"migrate from Vercel using ditch-vercel\"" ;;
+      cline)       info "  Cline/Roo:       Ask \"migrate this project from Vercel\"" ;;
+      agents-md)   info "  Copilot/Codex:   Ask \"use the ditch-vercel skill to migrate\"" ;;
+    esac
+  done
 fi
