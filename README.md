@@ -112,23 +112,13 @@ skills/ditch-vercel/
 
 ### Add a new framework
 
-Create `skills/ditch-vercel/frameworks/<framework>.md` with:
-
-- Detection criteria (package.json deps, config files)
-- Step-by-step migration instructions
-- Compatibility notes (Supported / Partial / Manual)
+Copy `skills/ditch-vercel/frameworks/_template.md` to `skills/ditch-vercel/frameworks/<framework>.md` and fill in each section. The template includes required sections, table formats, and inline comments explaining conventions.
 
 Then add the framework to the detection table in `SKILL.md` Phase 1.
 
 ### Add a new target platform
 
-Create `skills/ditch-vercel/targets/<target>.md` with:
-
-- Platform overview
-- Compatibility matrix (Vercel feature -> equivalent)
-- Known limitations
-- Config templates
-- Essential CLI commands
+Copy `skills/ditch-vercel/targets/_template.md` to `skills/ditch-vercel/targets/<target>.md` and fill in each section. The template includes required sections, table formats, and inline comments explaining conventions.
 
 Then add the target to `SKILL.md` Phase 1.
 
