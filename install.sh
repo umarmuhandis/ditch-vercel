@@ -80,22 +80,22 @@ download() {
 detect_agents() {
   agents=""
 
-  # Claude Code
-  if [ -d ".claude" ] || [ -f ".claude-plugin/plugin.json" ]; then
+  # Claude Code (binary or project config)
+  if command -v claude >/dev/null 2>&1 || [ -d ".claude" ] || [ -f ".claude-plugin/plugin.json" ]; then
     agents="$agents claude-code"
   fi
 
-  # Cursor
-  if [ -d ".cursor" ] || [ -f ".cursorrules" ]; then
+  # Cursor (binary, macOS app, or project config)
+  if command -v cursor >/dev/null 2>&1 || [ -d "/Applications/Cursor.app" ] || [ -d ".cursor" ] || [ -f ".cursorrules" ]; then
     agents="$agents cursor"
   fi
 
-  # Windsurf
-  if [ -d ".windsurf" ]; then
+  # Windsurf (binary, macOS app, or project config)
+  if command -v windsurf >/dev/null 2>&1 || [ -d "/Applications/Windsurf.app" ] || [ -d ".windsurf" ]; then
     agents="$agents windsurf"
   fi
 
-  # Cline / Roo Code
+  # Cline / Roo Code (VS Code extensions — no binary, project dir only)
   if [ -d ".clinerules" ] || [ -d ".roo" ]; then
     agents="$agents cline"
   fi
