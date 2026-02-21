@@ -146,9 +146,24 @@ Only include sections that have items. If there are no Blockers, omit the BLOCKE
 
 Generate a concrete migration plan, get explicit approval, then create the task list.
 
+### 3-pre. Cross-reference official docs
+
+Before generating the plan, verify migration steps against current official documentation.
+
+1. Read the `## Reference URLs` section from the loaded framework file and target file
+2. **Prefer `llms.txt` URLs** (lines prefixed with `llms.txt:`) — these are machine-readable doc indexes optimized for LLMs. Fetch the `llms.txt` URL and use the index to locate the specific migration/deployment page, then fetch that page. If no `llms.txt` entry exists for a source, fall back to the regular doc URLs.
+3. Fetch each URL and extract: current migration steps, required packages, config format, and any breaking changes or deprecation notices
+4. Compare fetched content against the migration steps in the framework knowledge file. Look for:
+   - Package name changes (e.g. adapter renamed)
+   - New required config fields
+   - Deprecated CLI flags or commands
+   - Changed build output directories
+5. If discrepancies found: note them. They will be incorporated into the plan in 3a and flagged for the user in the plan output.
+6. If fetching fails for any URL: skip silently, proceed with framework file instructions
+
 ### 3a. Generate the migration plan
 
-Based on Phases 1-2, produce a specific plan. List exact file paths, package names, and what changes will be made. Tag each item with its category.
+Based on Phases 1-2 and the doc verification in 3-pre, produce a specific plan. List exact file paths, package names, and what changes will be made. Tag each item with its category. If doc verification found discrepancies with the knowledge file, use the official docs as the source of truth and note the discrepancy in the relevant plan item.
 
 ```
 Migration Plan: [Framework] on Vercel → [Target]
@@ -249,25 +264,7 @@ Check the project root for lock files (first match wins):
 
 If no lock file found, default to `npm`.
 
-### 4c. Cross-reference official docs
-
-Before executing file changes, verify migration steps against current official documentation.
-
-1. Read the `## Reference URLs` section from the loaded framework file and target file
-2. **Prefer `llms.txt` URLs** (lines prefixed with `llms.txt:`) — these are machine-readable doc indexes optimized for LLMs. Fetch the `llms.txt` URL and use the index to locate the specific migration/deployment page, then fetch that page. If no `llms.txt` entry exists for a source, fall back to the regular doc URLs.
-3. Fetch each URL and extract: current migration steps, required packages, config format, and any breaking changes or deprecation notices
-4. Compare fetched content against the migration steps you're about to execute. Look for:
-   - Package name changes (e.g. adapter renamed)
-   - New required config fields
-   - Deprecated CLI flags or commands
-   - Changed build output directories
-5. If discrepancies found:
-   - Show the user: "Official docs differ from migration template on: [list]"
-   - Ask the user: **"Follow official docs"** / **"Follow template"** / **"Let me decide per item"**
-6. If fetching fails for any URL: skip silently, proceed with framework file instructions
-7. Do NOT fetch URLs during Phase 1-3 (wastes context before user commits to migration)
-
-### 4d. Execute each task
+### 4c. Execute each task
 
 For each remaining task (dependencies, files, deletions):
 
@@ -286,7 +283,7 @@ For each remaining task (dependencies, files, deletions):
    - **"Skip this step"** → Mark done with "[SKIPPED]", continue
    - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, skip all remaining steps, stop execution
 
-### 4e. Build **verification**
+### 4d. Build verification
 
 After all file changes are complete:
 
@@ -309,7 +306,7 @@ After all file changes are complete:
      - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, skip remaining steps, stop
      - **"Continue anyway"** → Note "[BUILD FAILED - manual fix needed]" and continue
 
-### 4f. Local dev server verification
+### 4e. Local dev server verification
 
 After build passes, verify the app starts and responds locally.
 
