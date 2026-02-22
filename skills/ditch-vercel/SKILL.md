@@ -11,6 +11,27 @@ You are running the **ditch-vercel** migration skill. Follow the 5-phase flow be
 
 ---
 
+## Visual Style
+
+All user-facing output must use the cyberpunk "Escape Sequence" visual language. Follow these rules when rendering output in every phase:
+
+1. **Major frames** (Phase 1 banner, Phase 5 completion): Use double-line box-drawing characters — `╔` `═` `╗` `║` `╚` `═` `╝`
+2. **Reports and sub-panels** (Phase 2 report, Phase 3 plan): Use single-line rounded box-drawing — `┌` `─` `┐` `│` `└` `─` `┘`
+3. **Narrative/status lines**: Prefix with `>` — e.g. `> VERCEL LOCK-IN DETECTED`
+4. **Progress bars** (Phase 4): `██` for filled segments, `░░` for empty segments
+5. **Status tags** (Phase 4 tracker): `CLEAR` (completed), `ACTIVE` (in progress), `QUEUED` (pending), `FAILED` (error), `SKIPPED` (user skipped)
+6. **Prefix symbols** used across phases:
+   - `[✓]` — done / automated
+   - `[!]` — needs attention
+   - `[✗]` — blocker / critical
+   - `+` — add
+   - `-` — remove
+   - `~` — modify
+   - `×` — delete
+   - `◆` — manual action
+
+---
+
 ## Phase 1: SCAN
 
 Silently detect framework, Vercel features, and target platform in one pass. Minimal output — the report comes in Phase 2.
@@ -85,13 +106,30 @@ Read the target knowledge file:
 - Railway: [targets/railway.md](targets/railway.md)
 - VPS: [targets/vps.md](targets/vps.md)
 
-### 1d. Output (one line only)
+### 1d. Output
+
+Display the opening banner, then the themed scan results:
 
 ```
-Scanning... Detected [Framework] [version] ([variant]) with [N] Vercel features.
+╔══════════════════════════════════════════════╗
+║  ██████╗ ██╗████████╗ ██████╗██╗  ██╗       ║
+║  ██╔══██╗██║╚══██╔══╝██╔════╝██║  ██║       ║
+║  ██║  ██║██║   ██║   ██║     ███████║       ║
+║  ██║  ██║██║   ██║   ██║     ██╔══██║       ║
+║  ██████╔╝██║   ██║   ╚██████╗██║  ██║       ║
+║  ╚═════╝ ╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝       ║
+║                  VERCEL                       ║
+╚══════════════════════════════════════════════╝
+
+> VERCEL LOCK-IN DETECTED
+> INITIATING ESCAPE SEQUENCE...
+
+  Framework lock identified :  [Framework] [version] ([variant])
+  Hostile packages found    :  [N] Vercel-specific features
+  Escape route              :  [Target platform]
 ```
 
-Example: `Scanning... Detected Next.js 15 (App Router) with 8 Vercel features.`
+Example values: `Next.js 15 (App Router)`, `8`, `Cloudflare Workers/Pages`
 
 ---
 
@@ -125,27 +163,29 @@ For each detected feature:
 ### 2c. Output the report
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  MIGRATION COMPLEXITY: [🟢 GREEN / 🟡 YELLOW / 🔴 RED]
-  Estimated effort: [time estimate]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+> THREAT ASSESSMENT COMPLETE
 
-  AUTOMATED (ditch-vercel handles these):
-  ✅ [feature] → [what happens]
-  ✅ [feature] → [what happens]
+┌──────────────────────────────────────────────┐
+│  LOCK-IN SEVERITY : [🟢 GREEN / 🟡 YELLOW / 🔴 RED]  │
+│  Estimated extraction time : [time estimate]  │
+└──────────────────────────────────────────────┘
+
+  NEUTRALIZED (auto-handled):
+  [✓] [feature] → [what happens]
+  [✓] [feature] → [what happens]
   ...
 
-  NEEDS YOUR ATTENTION:
-  ⚠️  [feature] → [what the developer needs to do]
-  ⚠️  [feature] → [what the developer needs to do]
+  REQUIRES OPERATOR INTERVENTION:
+  [!] [feature] → [what the developer needs to do]
+  [!] [feature] → [what the developer needs to do]
   ...
 
-  BLOCKERS:
-  ❌ [feature] → [why it's a blocker and what's needed]
+  CRITICAL THREATS:
+  [✗] [feature] → [why it's a blocker and what's needed]
   ...
 ```
 
-Only include sections that have items. If there are no Blockers, omit the BLOCKERS section. If there are no Attention items, omit the NEEDS YOUR ATTENTION section.
+Only include sections that have items. If there are no Critical Threats, omit that section. If there are no Operator Intervention items, omit that section.
 
 ---
 
@@ -173,35 +213,39 @@ Before generating the plan, verify migration steps against current official docu
 Based on Phases 1-2 and the doc verification in 3-pre, produce a specific plan. List exact file paths, package names, and what changes will be made. Tag each item with its category. If doc verification found discrepancies with the knowledge file, use the official docs as the source of truth and note the discrepancy in the relevant plan item.
 
 ```
-Migration Plan: [Framework] on Vercel → [Target]
-═══════════════════════════════════════════════════
+> EXTRACTION PLAN GENERATED
+══════════════════════════════════════════════════
+  [Framework] on Vercel → [Target]
+══════════════════════════════════════════════════
 
-Dependencies to ADD:
-  - [package] [Automated]
-  - ...
+  PAYLOADS TO DEPLOY:
+  + [package]  [AUTO]
+  + [package]  [AUTO]
+  ...
 
-Dependencies to REMOVE:
-  - [package] [Automated]
-  - ...
+  PAYLOADS TO JETTISON:
+  - [package]  [AUTO]
+  - [package]  [AUTO]
+  ...
 
-Files to CREATE:
-  - [filepath] — [description] [Automated]
-  - ...
+  FILES TO INJECT:
+  + [filepath] — [description]  [AUTO]
+  ...
 
-Files to MODIFY:
-  - [filepath] — [description] [category]
-  - ...
+  FILES TO PATCH:
+  ~ [filepath] — [description]  [AUTO/MANUAL]
+  ...
 
-Files to DELETE:
-  - [filepath] [Automated]
-  - ...
+  FILES TO PURGE:
+  × [filepath]  [AUTO]
+  ...
 
-Manual Action Items (post-migration):
-  - [item] [Attention/Blocker]
-  - ...
+  POST-EXTRACTION OPS:
+  ◆ [item]  [MANUAL]
+  ...
 ```
 
-Each entry must be specific enough that the developer understands exactly what will happen.
+Each entry must be specific enough that the developer understands exactly what will happen. Tag each item `[AUTO]` for automated or `[MANUAL]` for attention/blocker items.
 
 ### 3b. Approval gate
 
@@ -210,16 +254,17 @@ Each entry must be specific enough that the developer understands exactly what w
 Ask the user:
 
 ```
-Approve the migration plan?
-- "Yes, proceed with migration"
-- "Modify the plan" → gather feedback, revise, re-approve
-- "Just wanted the report" → stop, no changes
+> AUTHORIZE EXTRACTION?
+
+  [1] Yes — execute extraction sequence
+  [2] Modify — adjust the plan
+  [3] Abort — no changes, exit clean
 ```
 
-If "Modify the plan": loop — gather feedback, revise the plan, present for approval again.
-If "Just wanted the report": stop gracefully. Output: `No changes made. Run /ditch-vercel anytime to continue.`
+If "Modify": loop — gather feedback, revise the plan, present for approval again.
+If "Abort": stop gracefully. Output: `> EXTRACTION ABORTED. No files changed. Run /ditch-vercel anytime to re-engage.`
 
-**CRITICAL: Do NOT create, modify, or delete any project files before receiving "Yes, proceed with migration".**
+**CRITICAL: Do NOT create, modify, or delete any project files before receiving approval (option 1).**
 
 ### 3c. Build the execution checklist
 
@@ -241,6 +286,13 @@ Each item must describe one atomic action with the exact command or file change.
 
 Execute the approved plan with safety nets and real-time task tracking.
 
+Output the extraction authorization header:
+
+```
+> EXTRACTION SEQUENCE AUTHORIZED
+──────────────────────────────────────────────
+```
+
 ### 4a. Git safety checkpoint
 
 Begin the git safety checkpoint.
@@ -255,7 +307,7 @@ Begin the git safety checkpoint.
 4. Mark the checkpoint step as done.
 5. Output:
    ```
-   Safety checkpoint created (commit: <sha-short>). To undo: git reset --hard <sha>
+   > Safety checkpoint locked (commit: <sha-short>). Emergency rollback: git reset --hard <sha>
    ```
 
 ### 4b. Detect package manager
@@ -277,18 +329,37 @@ For each remaining task (dependencies, files, deletions):
 
 **Important:** Follow the migration steps section in the framework knowledge file that matches the selected target platform. For example, if the target is VPS, follow `## Migration Steps (VPS)`. If the target is Cloudflare, follow `## Migration Steps (Cloudflare)`. Use the corresponding `## Compatibility Notes ([target])` section for replacement guidance.
 
-1. Announce the step you're starting
-2. Execute the action:
+1. Execute the action:
    - **Install dep**: `[pkg-manager] add <pkg>` / `[pkg-manager] add -D <pkg>`
    - **Remove dep**: `[pkg-manager] remove <pkg>`
    - **Create file**: Create the file
    - **Modify file**: Edit the file
    - **Delete file**: Delete the file (e.g. `rm`)
-3. If successful: mark the step as done
-4. If failed: show the error and ask the developer:
+2. If successful: mark the step as done
+3. If failed: show the error and ask the developer:
    - **"Fix it"** → Read the error, attempt a fix, retry the action
-   - **"Skip this step"** → Mark done with "[SKIPPED]", continue
+   - **"Skip this step"** → Mark done with `SKIPPED`, continue
    - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, skip all remaining steps, stop execution
+
+**Progress tracker rendering:** After each step completes, re-render the full progress tracker showing all steps. Use this format:
+
+```
+[03/14] ██████████████████░░░░░░░░░░░░  ACTIVE  Installing @opennextjs/cloudflare
+───────────────────────────────────────────────
+  [01/14] ██████████  CLEAR    Git safety checkpoint
+  [02/14] ██████████  CLEAR    Remove @vercel/analytics
+  [03/14] █████░░░░░  ACTIVE   Installing @opennextjs/cloudflare
+  [04/14] ░░░░░░░░░░  QUEUED   Create wrangler.toml
+  ...
+```
+
+Status tags: `CLEAR` (completed), `ACTIVE` (in progress), `QUEUED` (pending), `FAILED` (error), `SKIPPED` (user skipped). The top line shows the current step; the list shows all steps.
+
+On failure after the user chooses rollback, output:
+
+```
+> ABORT EXTRACTION? Reset to checkpoint <sha>
+```
 
 ### 4d. Build verification
 
@@ -362,30 +433,38 @@ Output the final migration summary with everything the developer needs.
 ### 5a. Migration summary
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  MIGRATION COMPLETE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+╔══════════════════════════════════════════════╗
+║  ███████╗██████╗ ███████╗███████╗            ║
+║  ██╔════╝██╔══██╗██╔════╝██╔════╝            ║
+║  █████╗  ██████╔╝█████╗  █████╗              ║
+║  ██╔══╝  ██╔══██╗██╔══╝  ██╔══╝              ║
+║  ██║     ██║  ██║███████╗███████╗            ║
+║  ╚═╝     ╚═╝  ╚═╝╚══════╝╚══════╝            ║
+╚══════════════════════════════════════════════╝
 
-  Created:   [list files]
-  Modified:  [list files]
-  Removed:   [list files]
-  Installed: [list packages]
-  Removed:   [list packages]
+> EXTRACTION COMPLETE
+> You are no longer locked in.
 
-  STILL NEEDS YOUR ATTENTION:
-  [list any Attention/Blocker items from the report that weren't fully automated]
+  Created  :  [list files]
+  Patched  :  [list files]
+  Purged   :  [list files]
+  Deployed :  [list packages]
+  Removed  :  [list packages]
 
-  NEXT STEPS:
+  REMAINING OPS:
+  ◆ [item from report that wasn't fully automated]
+  ...
+
+  NEXT MOVES:
   1. [deploy command] — deploy to [target]
   2. Set environment variables in [target] dashboard
   3. [any other manual items]
 
-  To undo everything:
+  EMERGENCY ROLLBACK:
   git reset --hard [checkpoint-sha]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Only include "STILL NEEDS YOUR ATTENTION" if there are remaining items. Derive the local dev command, deploy command, and manual items from the target knowledge file and framework knowledge file.
+Only include "REMAINING OPS" if there are remaining items. Derive the local dev command, deploy command, and manual items from the target knowledge file and framework knowledge file.
 
 ---
 
