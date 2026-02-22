@@ -280,6 +280,8 @@ Delete `vercel.json` from the project root.
 | `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Access R2 via `context.cloudflare.env.BUCKET_NAME` in loaders/actions. |
 | `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `context.cloudflare.env.KV_NAMESPACE` in loaders/actions. |
 | `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Hyperdrive proxies existing Postgres. Access via `context.cloudflare.env`. |
+| `@vercel/edge` | 0 | Automated | Workers Runtime | Workers natively run at edge. Remove the package — no replacement needed. |
+| `@vercel/edge-config` | 1 | Attention | Cloudflare KV | Replace with KV namespace. Access via `context.cloudflare.env.KV_NAMESPACE` in loaders/actions. |
 
 ---
 
@@ -307,6 +309,132 @@ Delete `vercel.json` from the project root.
 | `@vercel/blob` | 1 | Attention | Local filesystem or S3 SDK | Replace with `fs` for local storage or `@aws-sdk/client-s3` for S3-compatible storage. |
 | `@vercel/kv` | 1 | Attention | Redis (`ioredis`) | Install Redis. Replace `@vercel/kv` with `ioredis`. |
 | `@vercel/postgres` | 1 | Attention | PostgreSQL (`pg`) | Install PostgreSQL. Replace `@vercel/postgres` with `pg`. Direct connection — no serverless proxy needed. If using Prisma or Drizzle, just update the connection string. |
+| `@vercel/edge` | 0 | Automated | Node.js runtime | Remove the package. No replacement needed — Remix on VPS runs in full Node.js. |
+| `@vercel/edge-config` | 1 | Attention | Redis or config file | Replace with Redis (`ioredis`) for dynamic config or a JSON config file for static config. |
+
+## Migration Steps (Railway)
+
+### 1. Uninstall Vercel packages
+
+```bash
+npm uninstall @remix-run/vercel @vercel/remix @vercel/analytics @vercel/speed-insights @vercel/og @vercel/edge @vercel/edge-config
+```
+
+Only include packages that are actually in `package.json`. Remove their imports and usage from source files (see Compatibility Notes (Railway) for replacements).
+
+### 2. Install Node.js packages
+
+Install the Node.js runtime adapter and server (if not already present):
+
+```bash
+npm install @remix-run/node @remix-run/serve
+```
+
+### 3. Update `entry.server.tsx`
+
+Replace Vercel types with Node.js types:
+
+**Before:**
+```ts
+import type { EntryContext } from '@remix-run/vercel';
+// or: import type { EntryContext } from '@vercel/remix';
+```
+
+**After:**
+```ts
+import type { EntryContext } from '@remix-run/node';
+```
+
+### 4. Update loader/action imports
+
+Grep for all imports from `@remix-run/vercel`, `@vercel/remix`, or `@remix-run/cloudflare` and replace with `@remix-run/node`:
+
+**Before:**
+```ts
+import type { LoaderFunctionArgs } from '@remix-run/vercel';
+// or: import type { LoaderFunctionArgs } from '@vercel/remix';
+```
+
+**After:**
+```ts
+import type { LoaderFunctionArgs } from '@remix-run/node';
+```
+
+### 5. Update `package.json` scripts
+
+```json
+{
+  "scripts": {
+    "start": "remix-serve build/server/index.js"
+  }
+}
+```
+
+Keep the existing `dev` and `build` scripts unchanged.
+
+### 6. Create `railway.json` (recommended)
+
+Create `railway.json` in the project root for explicit control:
+
+```json
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "npx remix-serve build/server/index.js",
+    "healthcheckPath": "/",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
+```
+
+This is optional — Railway auto-detects Remix via Nixpacks, but explicit config gives more control.
+
+### 7. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- Use `railway variables set KEY=VALUE` via CLI
+- Or set via the Railway dashboard > Service > Variables tab
+
+### 8. Delete `vercel.json`
+
+Delete `vercel.json` from the project root.
+
+---
+
+## Compatibility Notes (Railway)
+
+### Supported
+
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| Loaders / Actions | 0 | Automated | Supported | Run as part of the Node.js server process. |
+| Route modules | 0 | Automated | Supported | File-based routing works identically. |
+| Nested routes | 0 | Automated | Supported | Works unchanged. |
+| Error boundaries | 0 | Automated | Supported | Works unchanged. |
+| Streaming | 0 | Automated | Supported | `renderToReadableStream` works natively in Node.js. |
+| `fetch` API | 0 | Automated | Supported | Native in Node.js 18+. |
+| Session storage | 0 | Automated | Supported | `createCookieSessionStorage` from `@remix-run/node` works natively. File-system session storage also available. |
+| Node.js APIs | 0 | Automated | Supported | Full Node.js API access — no restrictions. `fs`, `path`, `crypto`, native addons all work. |
+| `@vercel/edge` | 0 | Automated | Supported | Remove the package. No replacement needed — Remix on Railway runs in full Node.js. |
+| Preview Deployments | 0 | Automated | Supported | Railway automatically creates isolated environments for PRs. |
+
+### Manual
+
+| Feature | Weight | Category | Replacement | Action |
+|---------|--------|----------|-------------|--------|
+| `@vercel/analytics` | 1 | Attention | Plausible / Umami | Remove the package. Add analytics provider snippet to root template. |
+| `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package and component. |
+| `@vercel/blob` | 1 | Attention | Railway Volume or S3 SDK | Replace with Railway Volume for simple file storage or `@aws-sdk/client-s3` for S3-compatible storage. |
+| `@vercel/kv` | 1 | Attention | Redis (`ioredis`) | Add Redis via `railway add --plugin redis`. Replace `@vercel/kv` with `ioredis`. |
+| `@vercel/postgres` | 0 | Automated | Railway Postgres addon | Add Postgres via `railway add --plugin postgresql`. Replace `@vercel/postgres` with `pg`. Railway provides `DATABASE_URL` automatically. If using Prisma or Drizzle, just update the connection string. |
+| `@vercel/edge-config` | 1 | Attention | Redis or config file | Replace with Redis (`ioredis`) via Railway Redis addon for dynamic config, or a JSON config file for static config. |
+
+---
 
 ## Reference URLs
 - https://remix.run/docs/en/main/guides/templates

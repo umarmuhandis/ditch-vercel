@@ -266,6 +266,7 @@ Delete `vercel.json` from the project root.
 | `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Access R2 via `platform.env.BUCKET_NAME` in server load functions and API routes. |
 | `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `platform.env.KV_NAMESPACE`. Add KV binding to `wrangler.toml`. |
 | `@vercel/postgres` | 3 | Blocker | Cloudflare D1 or Hyperdrive | D1 uses SQLite. Hyperdrive proxies existing Postgres. Access via `platform.env`. |
+| `@vercel/edge` | 0 | Automated | Workers Runtime | Workers natively run at edge. Remove the package — no replacement needed. |
 | Edge config (`@vercel/edge-config`) | 1 | Attention | Cloudflare KV | Replace with KV namespace for key-value configuration data. |
 
 ---
@@ -296,7 +297,145 @@ Delete `vercel.json` from the project root.
 | `@vercel/blob` | 1 | Attention | Local filesystem or S3 SDK | Replace with `fs` for local storage or `@aws-sdk/client-s3` for S3-compatible storage. |
 | `@vercel/kv` | 1 | Attention | Redis (`ioredis`) | Install Redis. Replace `@vercel/kv` with `ioredis`. |
 | `@vercel/postgres` | 1 | Attention | PostgreSQL (`pg`) | Install PostgreSQL. Replace `@vercel/postgres` with `pg`. Direct connection. If using Prisma or Drizzle, just update the connection string. |
+| `@vercel/edge` | 0 | Automated | Node.js runtime | Remove the package. No replacement needed — SvelteKit on VPS runs in full Node.js. |
 | Edge config (`@vercel/edge-config`) | 1 | Attention | Redis or config file | Replace with Redis for dynamic config or a JSON config file for static config. |
+
+## Migration Steps (Railway)
+
+### 1. Uninstall Vercel adapter
+
+```bash
+npm uninstall @sveltejs/adapter-vercel
+```
+
+### 2. Install Node.js adapter
+
+```bash
+npm install -D @sveltejs/adapter-node
+```
+
+### 3. Remove common Vercel packages
+
+If the project uses any common Vercel packages, uninstall them:
+
+```bash
+npm uninstall @vercel/analytics @vercel/speed-insights @vercel/og @vercel/edge @vercel/edge-config
+```
+
+Only run for packages actually in `package.json`. Remove their imports and usage from source files (see Compatibility Notes (Railway) for replacements).
+
+### 4. Update `svelte.config.js`
+
+Replace the Vercel adapter with the Node.js adapter:
+
+**Before:**
+```js
+import adapter from '@sveltejs/adapter-vercel';
+
+export default {
+  kit: {
+    adapter: adapter(),
+  },
+};
+```
+
+**After:**
+```js
+import adapter from '@sveltejs/adapter-node';
+
+export default {
+  kit: {
+    adapter: adapter(),
+  },
+};
+```
+
+### 5. Update `package.json` scripts
+
+```json
+{
+  "scripts": {
+    "start": "node build/index.js"
+  }
+}
+```
+
+Keep the existing `dev`, `build`, and `check` scripts unchanged.
+
+### 6. Create `railway.json` (recommended)
+
+Create `railway.json` in the project root for explicit control:
+
+```json
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "node build/index.js",
+    "healthcheckPath": "/",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
+```
+
+This is optional — Railway auto-detects SvelteKit via Nixpacks, but explicit config gives more control.
+
+### 7. Migrate `vercel.json` and clean up
+
+If `vercel.json` has rewrites/redirects/headers, move them to SvelteKit hooks (`hooks.server.ts`) or framework-native config.
+
+### 8. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- Use `railway variables set KEY=VALUE` via CLI
+- Or set via the Railway dashboard > Service > Variables tab
+
+### 9. Delete `vercel.json`
+
+Delete `vercel.json` from the project root.
+
+---
+
+## Compatibility Notes (Railway)
+
+### Supported
+
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| SSR | 0 | Automated | Supported | `@sveltejs/adapter-node` produces a self-contained Node.js server. |
+| Prerendering | 0 | Automated | Supported | Static pages generated at build time. Works unchanged. |
+| API routes (`+server.ts`) | 0 | Automated | Supported | Run as part of the Node.js server process. |
+| Form actions | 0 | Automated | Supported | Works unchanged. |
+| Hooks (`hooks.server.ts`) | 0 | Automated | Supported | Run in the Node.js process. |
+| Load functions | 0 | Automated | Supported | Both universal and server load functions work. |
+| Streaming | 0 | Automated | Supported | Works natively in Node.js. |
+| Node.js APIs | 0 | Automated | Supported | Full Node.js API access — no restrictions. `fs`, `path`, `crypto`, native addons all work. |
+| `$env/static/private` | 0 | Automated | Supported | Works natively with `.env` files or Railway environment variables. |
+| `@vercel/edge` | 0 | Automated | Supported | Remove the package. No replacement needed — SvelteKit on Railway runs in full Node.js. |
+| Preview Deployments | 0 | Automated | Supported | Railway automatically creates isolated environments for PRs. |
+
+### Partial
+
+| Feature | Weight | Category | Status | Action |
+|---------|--------|----------|--------|--------|
+| Image optimization | 1 | Attention | Partial | No built-in equivalent to Vercel's image optimization. Use `sharp` for server-side processing or an external image service. |
+
+### Manual
+
+| Feature | Weight | Category | Replacement | Action |
+|---------|--------|----------|-------------|--------|
+| `@vercel/analytics` | 1 | Attention | Plausible / Umami | Remove the package. Add analytics provider JS snippet to `src/app.html` `<head>`. |
+| `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package and component. |
+| `@vercel/blob` | 1 | Attention | Railway Volume or S3 SDK | Replace with Railway Volume for simple file storage or `@aws-sdk/client-s3` for S3-compatible storage. |
+| `@vercel/kv` | 1 | Attention | Redis (`ioredis`) | Add Redis via `railway add --plugin redis`. Replace `@vercel/kv` with `ioredis`. |
+| `@vercel/postgres` | 0 | Automated | Railway Postgres addon | Add Postgres via `railway add --plugin postgresql`. Replace `@vercel/postgres` with `pg`. Railway provides `DATABASE_URL` automatically. If using Prisma or Drizzle, just update the connection string. |
+| `@vercel/edge-config` | 1 | Attention | Redis or config file | Replace with Redis (`ioredis`) via Railway Redis addon for dynamic config, or a JSON config file for static config. |
+
+---
 
 ## Reference URLs
 - https://svelte.dev/docs/kit/adapter-cloudflare

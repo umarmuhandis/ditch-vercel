@@ -75,12 +75,14 @@ Ask the user to choose the target platform:
 ```
 Where do you want to migrate?
 - Cloudflare (Workers/Pages — serverless edge) (Recommended)
+- Railway (Node.js — managed infrastructure with native DBs)
 - VPS (Node.js + PM2 + Nginx — self-managed server)
-- Other targets coming soon (Railway, Fly.io)
+- Other targets coming soon (Netlify, Fly.io)
 ```
 
 Read the target knowledge file:
 - Cloudflare: [targets/cloudflare.md](targets/cloudflare.md)
+- Railway: [targets/railway.md](targets/railway.md)
 - VPS: [targets/vps.md](targets/vps.md)
 
 ### 1d. Output (one line only)
@@ -99,11 +101,16 @@ The anxiety reducer. Show the developer exactly how hard this migration is BEFOR
 
 ### 2a. Calculate complexity score
 
-Cross-reference every detected Vercel feature against the target's compatibility matrix (from the target knowledge file AND the framework knowledge file).
+Cross-reference every detected Vercel feature against the target's compatibility matrix (from the target knowledge file) and the framework knowledge file's compatibility notes.
+
+**Deduplication rule:** When the same feature appears in BOTH the target matrix and the framework compatibility notes:
+1. Use the **target file's Weight** as the base score
+2. If the framework file lists a **lower** weight for the same feature on the same target, use the lower weight (the framework's adapter may handle it automatically)
+3. Count each feature exactly **once** — never sum from both files
 
 For each detected feature:
-1. Look up its **Weight** and **Category** from the knowledge files
-2. Sum all weights to get the total complexity score
+1. Look up its **Weight** and **Category** — target file is primary, framework file can override downward only
+2. Sum all weights → total complexity score
 3. Determine the traffic light:
    - 🟢 **GREEN** (0-2): ~1-2 hours — mostly automated
    - 🟡 **YELLOW** (3-6): ~3-5 hours — several manual steps
@@ -295,6 +302,12 @@ After all file changes are complete:
    - Remix: `<pkg> run build` (runs `remix vite:build`)
    - SvelteKit: `<pkg> run build`
    - Nuxt: `<pkg> run build` (runs `nuxt build`)
+   - Next.js + Railway: `<pkg> run build`
+   - Astro + Railway: `<pkg> run build`
+   - Remix + Railway: `<pkg> run build`
+   - SvelteKit + Railway: `<pkg> run build`
+   - Nuxt + Railway: `<pkg> run build`
+   - Static + Railway: `<pkg> run build` (or skip if no build step)
    - Static with build script: `<pkg> run build`
    - Static without build: skip (no build needed)
 3. Run the build command
@@ -323,6 +336,12 @@ After build passes, verify the app starts and responds locally.
    - Nuxt + Cloudflare: `npx wrangler pages dev .output/public` (port 8788)
    - Nuxt + VPS: `node .output/server/index.mjs` (port 3000)
    - Static + Cloudflare: `npx wrangler pages dev <output-dir>` (port 8788)
+   - Next.js + Railway: `node .next/standalone/server.js` (port 3000)
+   - Astro + Railway: `node dist/server/entry.mjs` (port 4321)
+   - Remix + Railway: `npx remix-serve build/server/index.js` (port 3000)
+   - SvelteKit + Railway: `node build/index.js` (port 3000)
+   - Nuxt + Railway: `node .output/server/index.mjs` (port 3000)
+   - Static + Railway: `npx serve <output-dir>` (port 3000)
    - Static + VPS: `npx serve <output-dir>` (port 3000)
 3. Start the preview command in the background
 4. Wait ~5 seconds for the server to start

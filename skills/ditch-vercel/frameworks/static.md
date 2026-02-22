@@ -281,5 +281,136 @@ No hard limits — constrained only by VPS disk space and Nginx configuration. N
 
 Static sites on VPS do not use server-side features. No PM2 or Node.js process is needed — Nginx serves files directly.
 
+## Migration Steps (Railway)
+
+### 1. Determine the output directory
+
+Identify where the built/static files live (same as Cloudflare/VPS step 1):
+
+| Tool/Setup | Typical output dir |
+|------------|-------------------|
+| Vite | `dist/` |
+| Create React App | `build/` |
+| Webpack | `dist/` or `build/` |
+| Parcel | `dist/` |
+| Hugo | `public/` |
+| Jekyll | `_site/` |
+| Eleventy (11ty) | `_site/` |
+| Plain HTML (no build) | `.` (project root) |
+
+### 2. Add a static file server
+
+Railway needs a process to serve static files. Install `serve`:
+
+```bash
+npm install serve
+```
+
+Add a start script to `package.json`:
+
+```json
+{
+  "scripts": {
+    "start": "npx serve <output-dir> -l 3000"
+  }
+}
+```
+
+Replace `<output-dir>` with the actual output directory (e.g., `dist`, `build`).
+
+### 3. Create `railway.json` (recommended)
+
+Create `railway.json` in the project root:
+
+```json
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "npx serve <output-dir> -l 3000",
+    "healthcheckPath": "/",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
+```
+
+Replace `<output-dir>` with the actual output directory.
+
+### 4. Migrate `vercel.json` config
+
+If `vercel.json` has headers, redirects, or rewrites:
+- **Rewrites (SPA fallback):** `serve` handles this with a `serve.json` config file:
+
+```json
+{
+  "rewrites": [
+    { "source": "**", "destination": "/index.html" }
+  ]
+}
+```
+
+Place `serve.json` in the output directory root.
+
+- **Redirects and headers:** Use `serve.json`:
+
+```json
+{
+  "redirects": [
+    { "source": "/old", "destination": "/new", "type": 301 }
+  ],
+  "headers": [
+    {
+      "source": "**",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "DENY" }
+      ]
+    }
+  ]
+}
+```
+
+### 5. Migrate environment variables
+
+Static sites rarely need runtime env vars. If your build uses env vars (e.g. `VITE_API_URL`), set them via:
+
+- `railway variables set VITE_API_URL=https://api.example.com` via CLI
+- Or set via the Railway dashboard > Service > Variables tab
+
+### 6. Delete `vercel.json`
+
+Remove `vercel.json` from the project root.
+
+---
+
+## Compatibility Notes (Railway)
+
+### Supported
+
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| Static HTML/CSS/JS | 0 | Automated | Supported | Railway serves static assets via `serve` or any static file server. |
+| Custom domains | 0 | Automated | Supported | Configure in Railway dashboard. Free SSL included. |
+| SPA routing (client-side) | 0 | Automated | Supported | Use `serve.json` with rewrite rule for SPA fallback. |
+| Custom headers | 0 | Automated | Supported | Configure via `serve.json` headers. |
+| Redirects | 0 | Automated | Supported | Configure via `serve.json` redirects. |
+| Preview Deployments | 0 | Automated | Supported | Railway automatically creates isolated environments for PRs. |
+
+### Limits
+
+Railway has no hard limits on static file count or size beyond the service's disk allocation. Build time limit is 20 minutes.
+
+### Not Applicable
+
+Static sites do not use server-side features, so the following Vercel features are irrelevant:
+- Serverless/Edge functions
+- ISR
+- SSR
+- API routes
+
+---
+
 ## Reference URLs
 - https://developers.cloudflare.com/pages/get-started/git-integration/

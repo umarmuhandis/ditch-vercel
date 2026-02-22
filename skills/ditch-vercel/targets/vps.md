@@ -46,6 +46,8 @@ Mapping of Vercel features to VPS equivalents. Use this to generate the compatib
 | `@vercel/blob` | Local filesystem or S3-compatible | 1 | Attention | Partial | For simple use: local filesystem storage via `fs`. For production: use S3-compatible storage (AWS S3, MinIO, Backblaze B2) via `@aws-sdk/client-s3`. |
 | `@vercel/kv` | Redis (`ioredis`) | 1 | Attention | Partial | Install Redis on the VPS or use managed Redis. Replace `@vercel/kv` with `ioredis`. API mapping: `kv.get()` → `redis.get()`, `kv.set()` → `redis.set()`. |
 | `@vercel/postgres` | Direct PostgreSQL (`pg`) | 1 | Attention | Partial | Install PostgreSQL on the VPS or use managed Postgres. Replace `@vercel/postgres` with `pg`. Direct connection — no serverless proxy needed. If using Prisma/Drizzle, just update the connection string. |
+| `@vercel/edge` | Node.js runtime | 0 | Automated | Supported | Remove package + `export const runtime = 'edge'` declarations. |
+| `@vercel/edge-config` | Redis or config file | 1 | Attention | Partial | Replace with Redis (dynamic) or JSON config file (static). |
 | Monorepo | Standard deployment | 0 | Automated | Supported | Build the target app, deploy the output directory. No special configuration needed. |
 | Rewrites | Nginx config or framework-native | 0 | Automated | Supported | Move from `vercel.json` to framework-native config or Nginx `location` blocks. |
 | Redirects | Nginx config or framework-native | 0 | Automated | Supported | Move from `vercel.json` to framework-native config or Nginx `rewrite` directives. |

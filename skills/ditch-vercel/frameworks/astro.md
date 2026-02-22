@@ -238,6 +238,8 @@ Delete `vercel.json` from the project root.
 | `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package and component. |
 | `@vercel/blob` | 3 | Blocker | Cloudflare R2 | Different API. Access R2 via `Astro.locals.runtime.env.BUCKET_NAME`. |
 | `@vercel/kv` | 1 | Attention | Cloudflare KV | Different API. Access KV via `Astro.locals.runtime.env.KV_NAMESPACE`. Add binding to `wrangler.toml`. |
+| `@vercel/edge` | 0 | Automated | Workers Runtime | Workers natively run at edge. Remove the package — no replacement needed. |
+| `@vercel/edge-config` | 1 | Attention | Cloudflare KV | Replace with KV namespace. Access via `Astro.locals.runtime.env.KV_NAMESPACE`. |
 
 ---
 
@@ -264,6 +266,138 @@ Delete `vercel.json` from the project root.
 | `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package and component. |
 | `@vercel/blob` | 1 | Attention | Local filesystem or S3 SDK | Replace with `fs` for local storage or `@aws-sdk/client-s3` for S3-compatible storage. |
 | `@vercel/kv` | 1 | Attention | Redis (`ioredis`) | Install Redis. Replace `@vercel/kv` with `ioredis`. |
+| `@vercel/edge` | 0 | Automated | Node.js runtime | Remove the package. No replacement needed — Astro on VPS runs in full Node.js. |
+| `@vercel/edge-config` | 1 | Attention | Redis or config file | Replace with Redis (`ioredis`) for dynamic config or a JSON config file for static config. |
+
+## Migration Steps (Railway)
+
+### 1. Uninstall Vercel adapter
+
+```bash
+npm uninstall @astrojs/vercel
+```
+
+### 2. Install Node.js adapter
+
+```bash
+npm install @astrojs/node
+```
+
+### 3. Remove common Vercel packages
+
+If the project uses any common Vercel packages, uninstall them:
+
+```bash
+npm uninstall @vercel/analytics @vercel/speed-insights @vercel/og @vercel/edge @vercel/edge-config
+```
+
+Only run for packages actually in `package.json`. Remove their imports and usage from source files (see Compatibility Notes (Railway) for replacements).
+
+### 4. Update `astro.config.mjs`
+
+Replace the Vercel adapter with the Node.js adapter:
+
+**Before:**
+```js
+import vercel from '@astrojs/vercel/serverless';
+// or: import vercel from '@astrojs/vercel';
+
+export default defineConfig({
+  output: 'server',
+  adapter: vercel(),
+});
+```
+
+**After:**
+```js
+import node from '@astrojs/node';
+
+export default defineConfig({
+  output: 'server', // or 'hybrid' for selective prerendering
+  adapter: node({ mode: 'standalone' }),
+});
+```
+
+If the project uses `output: 'static'` (no adapter), no adapter swap is needed — just deploy the `dist/` directory to Railway.
+
+### 5. Update `package.json` scripts
+
+```json
+{
+  "scripts": {
+    "start": "node dist/server/entry.mjs"
+  }
+}
+```
+
+Keep the existing `dev` and `build` scripts unchanged.
+
+### 6. Create `railway.json` (recommended)
+
+Create `railway.json` in the project root for explicit control:
+
+```json
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "node dist/server/entry.mjs",
+    "healthcheckPath": "/",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
+```
+
+This is optional — Railway auto-detects Astro via Nixpacks, but explicit config gives more control.
+
+### 7. Migrate `vercel.json` and clean up
+
+If `vercel.json` has rewrites/redirects/headers, move them to Astro middleware or framework-native config.
+
+### 8. Migrate environment variables
+
+Copy environment variable names from the Vercel dashboard (Settings > Environment Variables).
+
+- Use `railway variables set KEY=VALUE` via CLI
+- Or set via the Railway dashboard > Service > Variables tab
+
+### 9. Delete `vercel.json`
+
+Delete `vercel.json` from the project root.
+
+---
+
+## Compatibility Notes (Railway)
+
+### Supported
+
+| Feature | Weight | Category | Status | Notes |
+|---------|--------|----------|--------|-------|
+| SSR (server output) | 0 | Automated | Supported | `@astrojs/node` with `mode: 'standalone'` produces a self-contained Node.js server. |
+| Hybrid rendering | 0 | Automated | Supported | Use `output: 'hybrid'` with `export const prerender = true/false` per page. |
+| Static output | 0 | Automated | Supported | Deploy `dist/` directory. Railway serves via Nixpacks static provider or a simple `serve` command. |
+| API endpoints | 0 | Automated | Supported | Run as part of the Node.js server process. |
+| Content Collections | 0 | Automated | Supported | Works unchanged. |
+| View Transitions | 0 | Automated | Supported | Client-side feature, works unchanged. |
+| Image optimization (`astro:assets`) | 0 | Automated | Supported | `sharp` is available on Railway (full Node.js). Image optimization works out of the box with `@astrojs/node`. |
+| Node.js APIs in SSR | 0 | Automated | Supported | Full Node.js API access — no restrictions. `fs`, `path`, `crypto`, native addons all work. |
+| `@vercel/edge` | 0 | Automated | Supported | Remove the package. No replacement needed — Astro on Railway runs in full Node.js. |
+| Preview Deployments | 0 | Automated | Supported | Railway automatically creates isolated environments for PRs. |
+
+### Manual
+
+| Feature | Weight | Category | Replacement | Action |
+|---------|--------|----------|-------------|--------|
+| `@vercel/analytics` | 1 | Attention | Plausible / Umami | Remove the package. Self-host Plausible or Umami, or add any analytics provider's JS snippet to the base layout. |
+| `@vercel/speed-insights` | 1 | Attention | None (remove) | No direct equivalent. Remove the package and component. |
+| `@vercel/blob` | 1 | Attention | Railway Volume or S3 SDK | Replace with Railway Volume for simple file storage or `@aws-sdk/client-s3` for S3-compatible storage. |
+| `@vercel/kv` | 1 | Attention | Redis (`ioredis`) | Add Redis via `railway add --plugin redis`. Replace `@vercel/kv` with `ioredis`. |
+| `@vercel/edge-config` | 1 | Attention | Redis or config file | Replace with Redis (`ioredis`) via Railway Redis addon for dynamic config, or a JSON config file for static config. |
+
+---
 
 ## Reference URLs
 - https://docs.astro.build/en/guides/deploy/cloudflare/

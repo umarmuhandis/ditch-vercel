@@ -55,6 +55,8 @@ Each feature has a weight used to calculate migration complexity:
 | `@vercel/blob` | [equivalent] | 3 | Blocker | Partial | API differences and migration effort |
 | `@vercel/kv` | [equivalent] | 1 | Attention | Partial | API differences |
 | `@vercel/postgres` | [equivalent] | 3 | Blocker | Partial | Migration path |
+| `@vercel/edge` | [equivalent] | 0 | Automated | Supported | Edge runtime mapping |
+| `@vercel/edge-config` | [equivalent] | 1 | Attention | Partial | Config store replacement |
 | Rewrites | [mechanism] | 0 | Automated | Supported | Config format |
 | Redirects | [mechanism] | 0 | Automated | Supported | Config format |
 | Headers | [mechanism] | 0 | Automated | Supported | Config format |

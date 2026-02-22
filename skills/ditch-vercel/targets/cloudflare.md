@@ -44,6 +44,8 @@ Mapping of Vercel features to Cloudflare equivalents. Use this to generate the c
 | Vercel Blob | R2 | 3 | Blocker | Partial | Different API. Use S3-compatible client or R2 bindings. Add `[[r2_buckets]]` to `wrangler.toml` |
 | Vercel KV | Cloudflare KV | 1 | Attention | Partial | Different API, simpler. Add `[[kv_namespaces]]` to `wrangler.toml` |
 | Vercel Postgres | D1 or Hyperdrive | 3 | Blocker | Partial | D1 = SQLite-compatible serverless DB. Hyperdrive = connection pool proxy to existing Postgres |
+| `@vercel/edge` | Workers Runtime | 0 | Automated | Supported | Workers natively run at edge. Remove package. |
+| `@vercel/edge-config` | KV | 1 | Attention | Partial | Replace with KV. Add `[[kv_namespaces]]` to `wrangler.toml`. |
 | Monorepo | Workers + Pages | 0 | Automated | Supported | Configure build output path per app |
 | Rewrites | `_redirects` file (status 200) or next.config rewrites | 0 | Automated | Supported | Move from `vercel.json` to framework-native or `_redirects` |
 | Redirects | `_redirects` file or next.config redirects | 0 | Automated | Supported | Move from `vercel.json` to framework-native or `_redirects` |
