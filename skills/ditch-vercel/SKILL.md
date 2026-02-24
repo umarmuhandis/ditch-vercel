@@ -1,8 +1,11 @@
 ---
 name: ditch-vercel
 description: Migrate a project from Vercel to another platform. Use when user wants to leave Vercel, migrate to Cloudflare/VPS, or run /ditch-vercel.
-argument-hint: "[target-platform]"
+license: MIT
+compatibility: Requires git. Target-specific CLIs installed during migration: wrangler (Cloudflare), railway (Railway).
 allowed-tools: Read, Glob, Grep, Bash, Edit, Write, AskUserQuestion, TaskCreate, TaskUpdate, TaskList
+metadata:
+  argument-hint: "[target-platform]"
 ---
 
 # Ditch Vercel — Migration Orchestrator
@@ -13,22 +16,7 @@ You are running the **ditch-vercel** migration skill. Follow the 5-phase flow be
 
 ## Visual Style
 
-All user-facing output must use the cyberpunk "Escape Sequence" visual language. Follow these rules when rendering output in every phase:
-
-1. **Major frames** (Phase 1 banner, Phase 5 completion): Use double-line box-drawing characters — `╔` `═` `╗` `║` `╚` `═` `╝`
-2. **Reports and sub-panels** (Phase 2 report, Phase 3 plan): Use single-line rounded box-drawing — `┌` `─` `┐` `│` `└` `─` `┘`
-3. **Narrative/status lines**: Prefix with `>` — e.g. `> VERCEL LOCK-IN DETECTED`
-4. **Progress bars** (Phase 4): `██` for filled segments, `░░` for empty segments
-5. **Status tags** (Phase 4 tracker): `CLEAR` (completed), `ACTIVE` (in progress), `QUEUED` (pending), `FAILED` (error), `SKIPPED` (user skipped)
-6. **Prefix symbols** used across phases:
-   - `[✓]` — done / automated
-   - `[!]` — needs attention
-   - `[✗]` — blocker / critical
-   - `+` — add
-   - `-` — remove
-   - `~` — modify
-   - `×` — delete
-   - `◆` — manual action
+Read [references/visual-style.md](references/visual-style.md) and follow its rules for all user-facing output in every phase.
 
 ---
 
