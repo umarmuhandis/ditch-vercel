@@ -32,13 +32,23 @@ All user-facing output must use the cyberpunk "Escape Sequence" visual language.
 
 ---
 
+## Tool Usage
+
+When your agent supports built-in tools, prefer them over rendering markdown prompts:
+
+- **User questions** → Use `AskUserQuestion` with structured options instead of printing a text menu
+- **Task tracking** → Use `TaskCreate` to build the checklist, `TaskUpdate` to mark progress, `TaskList` to re-render status
+- **Fallback**: If a tool is unavailable or fails, fall back to the markdown format shown in each phase
+
+---
+
 ## Phase 1: SCAN
 
 Silently detect framework, Vercel features, and target platform in one pass. Minimal output — the report comes in Phase 2.
 
 ### Pre-flight check
 
-Verify the project is a git repository by checking for a `.git` directory. If not a git repo, warn the user: "This project is not a git repository. The safety checkpoint (Phase 4) requires git for rollback. Initialize with `git init` first, or proceed without rollback protection." Ask the user whether to continue or stop.
+Verify the project is a git repository by checking for a `.git` directory. If not a git repo, warn the user: "This project is not a git repository. The safety checkpoint (Phase 4) requires git for rollback. Initialize with `git init` first, or proceed without rollback protection." Ask the user whether to continue or stop. Use `AskUserQuestion` with options: "Continue without rollback protection" / "Stop — I'll initialize git first".
 
 ### 1a. Detect framework
 
@@ -91,7 +101,7 @@ Scan for every Vercel-specific feature. Check every item — do NOT skip any.
 
 ### 1c. Select target platform
 
-Ask the user to choose the target platform:
+Ask the user to choose the target platform. Use `AskUserQuestion` with options: "Cloudflare (Workers/Pages — serverless edge) (Recommended)" / "Railway (Node.js — managed infrastructure with native DBs)" / "VPS (Node.js + PM2 + Nginx — self-managed server)". The user can type a custom answer for unlisted targets. Fallback text menu:
 
 ```
 Where do you want to migrate?
@@ -251,7 +261,7 @@ Each entry must be specific enough that the developer understands exactly what w
 
 **This is a hard gate. Do NOT proceed without explicit approval.**
 
-Ask the user:
+Ask the user. Use `AskUserQuestion` with options: "Yes — execute extraction sequence" / "Modify — adjust the plan" / "Abort — no changes, exit clean". Fallback text menu:
 
 ```
 > AUTHORIZE EXTRACTION?
@@ -268,7 +278,7 @@ If "Abort": stop gracefully. Output: `> EXTRACTION ABORTED. No files changed. Ru
 
 ### 3c. Build the execution checklist
 
-After the developer approves, build an ordered checklist of every migration action. Track each item's progress throughout Phase 4 (announce when starting and completing each step). If your agent supports built-in task tracking, use it.
+After the developer approves, build an ordered checklist of every migration action. Use `TaskCreate` to create one task per checklist item — include the action description and category tag (AUTO/MANUAL) in each task. Track each item's progress throughout Phase 4 (announce when starting and completing each step). If `TaskCreate` is unavailable, render the checklist as markdown.
 
 Execution order:
 1. **Create git safety checkpoint**
@@ -335,13 +345,13 @@ For each remaining task (dependencies, files, deletions):
    - **Create file**: Create the file
    - **Modify file**: Edit the file
    - **Delete file**: Delete the file (e.g. `rm`)
-2. If successful: mark the step as done
-3. If failed: show the error and ask the developer:
+2. If successful: mark the step as done. Use `TaskUpdate` to set the task status to "completed".
+3. If failed: show the error and ask the developer. Use `AskUserQuestion` with options: "Fix it" / "Skip this step" / "Rollback everything". Then:
    - **"Fix it"** → Read the error, attempt a fix, retry the action
    - **"Skip this step"** → Mark done with `SKIPPED`, continue
    - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, skip all remaining steps, stop execution
 
-**Progress tracker rendering:** After each step completes, re-render the full progress tracker showing all steps. Use this format:
+**Progress tracker rendering:** Use `TaskUpdate` to set each task's status: "in_progress" when starting, "completed" when done. Use `TaskList` to display current progress. Continue rendering the visual progress tracker alongside task updates for agents that display both. After each step completes, re-render the full progress tracker showing all steps. Use this format:
 
 ```
 [03/14] ██████████████████░░░░░░░░░░░░  ACTIVE  Installing @opennextjs/cloudflare
@@ -385,7 +395,7 @@ After all file changes are complete:
 4. If build passes: mark step as done
 5. If build fails:
    - Show the error output (first 50 lines)
-   - Ask the developer:
+   - Ask the developer. Use `AskUserQuestion` with options: "Fix it" / "Rollback everything" / "Continue anyway". Then:
      - **"Fix it"** → Read the error, attempt to fix the code, re-run the build
      - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, skip remaining steps, stop
      - **"Continue anyway"** → Note "[BUILD FAILED - manual fix needed]" and continue
@@ -421,7 +431,7 @@ After build passes, verify the app starts and responds locally.
 7. If curl returns 200: mark step as done
 8. If curl fails or non-200:
    - Show the output
-   - Ask the developer:
+   - Ask the developer. Use `AskUserQuestion` with options: "Fix it" / "Skip" / "Rollback everything". Then:
      - **"Fix it"** → investigate, fix, retry
      - **"Skip"** → mark done with "[DEV SERVER CHECK SKIPPED]"
      - **"Rollback everything"** → Run `git reset --hard <checkpoint-sha>`, skip remaining steps, stop
@@ -474,8 +484,8 @@ Only include "REMAINING OPS" if there are remaining items. Derive the local dev 
 - **Be safe**: Never touch files outside the project directory. Never expose env var values.
 - **Be transparent**: Show the user what you found and what you plan to do before doing it.
 - **Handle errors**: If a knowledge file is missing, work from your own knowledge but warn the user. If a scan finds nothing, say so explicitly rather than guessing.
-- **One framework only**: If multiple frameworks are detected, ask the user to clarify which one is the primary framework.
-- **Monorepo awareness**: If the project root contains `apps/` or `packages/` directories, ask the user which app to migrate.
-- **Track progress** through each step during Phase 4. Use your agent's task tracking if available.
+- **One framework only**: If multiple frameworks are detected, ask the user to clarify which one is the primary framework. Use `AskUserQuestion` with the detected frameworks as options.
+- **Monorepo awareness**: If the project root contains `apps/` or `packages/` directories, ask the user which app to migrate. Use `AskUserQuestion` with detected app directory names as options.
+- **Track progress** through each step during Phase 4. Use `TaskCreate` (Phase 3c) and `TaskUpdate` (Phase 4) for task tracking. Use `TaskList` to show current status.
 - **Step #1 must always be the git safety checkpoint.**
 - **Never mark a step as done if the action failed.** Failed steps need recovery options presented to the developer. Note: user-initiated skips (where the developer explicitly chooses "Skip this step") are NOT failures — mark these done with a "[SKIPPED]" tag.
